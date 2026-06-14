@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────
+# Gradle / Kotlin
+# ─────────────────────────────────────────────
+.gradle/
+.kotlin/
+build/
+**/build/
+local.properties
+
+# ─────────────────────────────────────────────
+# Android
+# ─────────────────────────────────────────────
+*.keystore
+*.jks
+.cxx/
+captures/
+*.apk
+*.aab
+
+# ─────────────────────────────────────────────
+# Node / Portal (React + Vite)
+# ─────────────────────────────────────────────
+node_modules/
+dist/
+
+# ─────────────────────────────────────────────
+# Firebase
+# ─────────────────────────────────────────────
+.firebase/
+*-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# ─────────────────────────────────────────────
+# Secrets (credentials & environment)
+# ─────────────────────────────────────────────
+*serviceAccount*.json
+service-account*.json
+firebase-adminsdk*.json
+# Private keys / certificates (defensive — none committed today)
+*.pem
+*.p12
+*.key
+.env
+.env.*
+!.env.example
+
+# ─────────────────────────────────────────────
+# IDE / OS
+# ─────────────────────────────────────────────
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+**/bin/
+*.tsbuildinfo

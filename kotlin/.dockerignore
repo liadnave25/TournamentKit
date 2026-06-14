@@ -1,0 +1,28 @@
+# Keep the Docker build context small and reproducible.
+
+# Build outputs and caches (rebuilt inside the image).
+.gradle/
+.kotlin/
+build/
+**/build/
+
+# Machine-specific config and secrets — never ship these into an image.
+local.properties
+*.keystore
+*.jks
+*serviceAccount*.json
+service-account*.json
+firebase-adminsdk*.json
+
+# Android modules are not part of the server image (-PserverOnly skips them anyway).
+sdk/
+demo-app/
+
+# Server tooling not needed at build time.
+scripts/
+
+# IDE / OS noise.
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

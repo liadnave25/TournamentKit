@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// TournamentKit security model:
+//   * The client reads ONLY its own tournaments, via real-time snapshot listeners.
+//   * ALL writes are server-only — every mutation goes through the Ktor server (Admin SDK),
+//     which bypasses these rules. So `allow write` is false everywhere.
+//   * `projects/*` holds secrets (apiKeyHash, ownerUid) and is never client-accessible at all.
+// The client signs in with Firebase Anonymous Auth, so request.auth.uid exists for reads.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // True when the caller is signed in and their uid is a participant of tournament {tid}.
+    // Membership is checked against a parallel participantUids array (see note below) for an
+    // O(1) `in` lookup — rule language cannot extract a field across a list of maps.
+    function isParticipant(tid) {
+      return request.auth != null
+        && request.auth.uid in get(/databases/$(database)/documents/tournaments/$(tid)).data.participantUids;
+    }
+
+    // ---- Tournaments: a participant may read its own tournament; nobody may write from the client.
+    match /tournaments/{tid} {
+      // For the tournament doc itself, resource.data is already loaded — no extra get() needed.
+      allow read: if request.auth != null && request.auth.uid in resource.data.participantUids;
+      allow write: if false;
+
+      // Match documents: same participant-only read; server-only writes.
+      match /matches/{mid} {
+        allow read: if isParticipant(tid);
+        allow write: if false;
+      }
+
+      // Standings rows: same participant-only read; server-only writes.
+      match /standings/{uid} {
+        allow read: if isParticipant(tid);
+        allow write: if false;
+      }
+
+      // Audit log: admin-only data. The portal reads it through the server, never directly.
+      match /auditLog/{entryId} {
+        allow read: if false;
+        allow write: if false;
+      }
+    }
+
+    // ---- Projects and everything under them hold secrets — never client-accessible.
+    match /projects/{pid}/{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ---- Deny anything not explicitly allowed above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
