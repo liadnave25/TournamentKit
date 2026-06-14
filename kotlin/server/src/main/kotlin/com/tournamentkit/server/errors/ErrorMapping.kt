@@ -20,6 +20,7 @@ private fun statusFor(code: TKErrorCode): HttpStatusCode = when (code) {
     TKErrorCode.TK_TOURNAMENT_LOCKED -> HttpStatusCode.Conflict              // 409
     TKErrorCode.TK_TOURNAMENT_FROZEN -> HttpStatusCode.Conflict              // 409 (portal froze it)
     TKErrorCode.TK_FORBIDDEN -> HttpStatusCode.Forbidden                     // 403 (not the project owner)
+    TKErrorCode.TK_RATE_LIMITED -> HttpStatusCode.TooManyRequests            // 429 (per-key rate limit)
     TKErrorCode.TK_INVALID_SCORE -> HttpStatusCode.BadRequest                // 400
     else -> HttpStatusCode.InternalServerError                              // 500 fallback
 }

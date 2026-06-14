@@ -13,6 +13,7 @@ import com.tournamentkit.server.routes.portalRoutes
 import com.tournamentkit.server.routes.publicRoutes
 import com.tournamentkit.server.service.DevSeedService
 import com.tournamentkit.server.service.PortalService
+import com.tournamentkit.server.service.RateLimiter
 import com.tournamentkit.server.service.ReportService
 import com.tournamentkit.server.service.TournamentService
 import io.ktor.serialization.kotlinx.json.json
@@ -52,12 +53,15 @@ fun Application.module() {
     val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService)
     val devSeed = DevSeedService(projects)
 
+    // One in-memory rate limiter shared across /v1 requests (per API key / IP).
+    val rateLimiter = RateLimiter(limit = Env.rateLimitPerMin)
+
     routing {
         // Liveness check: returns 200 OK so we know the server is up.
         get("/health") { call.respondText("OK") }
 
-        // Authenticated public API (API key).
-        publicRoutes(projects, ratings, tournamentService, reportService)
+        // Authenticated public API (API key), rate-limited per key/IP.
+        publicRoutes(projects, ratings, tournamentService, reportService, rateLimiter)
 
         // Portal management API (Firebase ID token + project ownership).
         portalRoutes(projects, portalService, tournamentService)

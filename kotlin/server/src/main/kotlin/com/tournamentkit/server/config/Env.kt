@@ -26,4 +26,7 @@ object Env {
     val corsOrigins: List<String>
         get() = (System.getenv("CORS_ORIGINS") ?: "http://localhost:5173,http://127.0.0.1:5173")
             .split(",").map { it.trim() }.filter { it.isNotEmpty() }
+
+    // Max /v1 requests allowed per API key (or IP) per minute. Defaults to 120; configurable in prod.
+    val rateLimitPerMin: Int get() = System.getenv("RATE_LIMIT_PER_MIN")?.toIntOrNull() ?: 120
 }

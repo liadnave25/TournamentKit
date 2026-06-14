@@ -2,9 +2,11 @@ package com.tournamentkit.server.routes
 
 import com.tournamentkit.server.auth.apiKeyAuthPlugin
 import com.tournamentkit.server.auth.projectId
+import com.tournamentkit.server.auth.rateLimitPlugin
 import com.tournamentkit.server.data.ProjectRepository
 import com.tournamentkit.server.data.RatingRepository
 import com.tournamentkit.server.engine.EloCalculator
+import com.tournamentkit.server.service.RateLimiter
 import com.tournamentkit.server.service.ReportService
 import com.tournamentkit.server.service.TournamentService
 import io.ktor.server.application.call
@@ -23,9 +25,12 @@ fun Route.publicRoutes(
     projects: ProjectRepository,
     ratings: RatingRepository,
     tournaments: TournamentService,
-    reports: ReportService
+    reports: ReportService,
+    rateLimiter: RateLimiter
 ) {
     route("/v1") {
+        // Rate-limit per API key (or IP) BEFORE auth, so abusive traffic is throttled either way.
+        install(rateLimitPlugin(rateLimiter))
         // Every /v1 request must carry a valid API key + project id.
         install(apiKeyAuthPlugin(projects))
 

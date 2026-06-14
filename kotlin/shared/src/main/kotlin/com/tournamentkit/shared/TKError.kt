@@ -18,7 +18,8 @@ enum class TKErrorCode {
     TK_ALREADY_JOINED,
     TK_UNKNOWN,
     TK_FORBIDDEN,
-    TK_TOURNAMENT_FROZEN
+    TK_TOURNAMENT_FROZEN,
+    TK_RATE_LIMITED
 }
 
 // A typed error: a code plus a human-readable message.
