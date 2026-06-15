@@ -1,11 +1,18 @@
 // :sdk — Android library (AAR). Public TournamentKit API + Retrofit/OkHttp network layer
 // + OPTIONAL Jetpack Compose UI components (com.tournamentkit.sdk.ui) that a developer may ignore.
+// Published as an Android library via JitPack (see jitpack.yml + the publishing block below).
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
+    `maven-publish`
 }
+
+// Publication coordinates. On JitPack the version is the git tag; locally it defaults via -PsdkVersion.
+// JitPack multi-module group for github.com/liadnave25/TournamentKit.
+group = "com.github.liadnave25.TournamentKit"
+version = (findProperty("sdkVersion") as String?) ?: "0.1.0"
 
 android {
     namespace = "com.tournamentkit.sdk"
@@ -29,9 +36,31 @@ android {
         jvmTarget = "17"
     }
 
+    // Publish the `release` variant only, and include a sources jar in the publication.
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+
     testOptions {
         // Let unit tests run on the JVM; un-stubbed Android calls return defaults instead of crashing.
         unitTests.isReturnDefaultValues = true
+    }
+}
+
+// Wire the Android `release` component into a Maven publication (AAR + POM + sources).
+// afterEvaluate is required: the AGP `release` software component only exists after evaluation.
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = project.group.toString()
+            artifactId = "tournamentkit"
+            version = project.version.toString()
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
     }
 }
 

@@ -16,13 +16,22 @@ dependencyResolutionManagement {
 
 rootProject.name = "tournamentkit"
 
-// Always part of the server build.
+// :shared is needed by everything (server, sdk).
 include(":shared")
-include(":server")
 
-// The Android modules need the Android SDK, which a server-only build (e.g. the Docker image) lacks.
-// Pass -PserverOnly to skip them: ./gradlew -PserverOnly :server:shadowJar
-if (!settings.providers.gradleProperty("serverOnly").isPresent) {
+val serverOnly = settings.providers.gradleProperty("serverOnly").isPresent
+val sdkOnly = settings.providers.gradleProperty("sdkOnly").isPresent
+
+// -PsdkOnly: publish/build only the Android library (e.g. on JitPack) — include :shared + :sdk, skip
+//   :server (heavy server deps) and :demo-app (an Android app needing extra setup).
+// -PserverOnly: the Docker image build — include :server, skip the Android modules (no Android SDK).
+// Default (no flag): the full build with every module.
+if (!sdkOnly) {
+    include(":server")
+}
+if (!serverOnly) {
     include(":sdk")
-    include(":demo-app")
+    if (!sdkOnly) {
+        include(":demo-app")
+    }
 }

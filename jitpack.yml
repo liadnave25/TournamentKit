@@ -1,0 +1,9 @@
+# JitPack build config for the TournamentKit Android SDK (the :sdk module).
+# JitPack provides the Android SDK for Android-library builds, so :sdk can compile here.
+# The Gradle build root is kotlin/, and -PsdkOnly trims the build to :shared + :sdk
+# (skipping :server and :demo-app), so a missing local.properties / no server deps don't break it.
+jdk:
+  - openjdk17
+install:
+  # Publish BOTH :shared and :sdk (the SDK depends on :shared) to the local repo JitPack serves from.
+  - cd kotlin && ./gradlew -PsdkOnly -PsdkVersion=$VERSION :shared:publishToMavenLocal :sdk:publishToMavenLocal
