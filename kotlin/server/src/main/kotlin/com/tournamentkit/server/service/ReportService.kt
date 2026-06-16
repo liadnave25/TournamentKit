@@ -82,7 +82,12 @@ class ReportService(private val db: Firestore) {
             val tournament = tournamentFromMap(tournSnap.data!!)
             val rules = tournament.rules
 
-            // 3a. FROZEN tournaments reject player report/confirm (portal pause). Admin override still works.
+            // 3a. TALLY has no matches: report/confirm/override are not part of its contract.
+            if (rules.type == TemplateType.TALLY) {
+                throw TKException(TKErrorCode.TK_NOT_SUPPORTED_FOR_TYPE, "this tournament type has no matches")
+            }
+
+            // 3b. FROZEN tournaments reject player report/confirm (portal pause). Admin override still works.
             if (!adminOverride && tournament.status == TournamentStatus.FROZEN) {
                 throw TKException(TKErrorCode.TK_TOURNAMENT_FROZEN, "tournament is frozen")
             }

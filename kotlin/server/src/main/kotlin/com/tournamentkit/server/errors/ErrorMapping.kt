@@ -22,6 +22,7 @@ private fun statusFor(code: TKErrorCode): HttpStatusCode = when (code) {
     TKErrorCode.TK_FORBIDDEN -> HttpStatusCode.Forbidden                     // 403 (not the project owner)
     TKErrorCode.TK_RATE_LIMITED -> HttpStatusCode.TooManyRequests            // 429 (per-key rate limit)
     TKErrorCode.TK_INVALID_SCORE -> HttpStatusCode.BadRequest                // 400
+    TKErrorCode.TK_NOT_SUPPORTED_FOR_TYPE -> HttpStatusCode.BadRequest       // 400 (op wrong for this type)
     else -> HttpStatusCode.InternalServerError                              // 500 fallback
 }
 

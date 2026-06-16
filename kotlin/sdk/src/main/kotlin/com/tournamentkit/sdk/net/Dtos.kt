@@ -44,6 +44,14 @@ internal data class ConfirmBody(
     val userId: String
 )
 
+@Serializable
+internal data class TallyAddBody(
+    val tournamentId: String,
+    val userId: String,
+    val displayName: String,
+    val points: Int
+)
+
 // ---------- response bodies ----------
 
 // Server's full tournament view (tournament + matches + standings). The SDK unwraps the part each call needs.

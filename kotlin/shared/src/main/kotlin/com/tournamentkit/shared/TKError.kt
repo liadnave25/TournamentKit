@@ -19,7 +19,9 @@ enum class TKErrorCode {
     TK_UNKNOWN,
     TK_FORBIDDEN,
     TK_TOURNAMENT_FROZEN,
-    TK_RATE_LIMITED
+    TK_RATE_LIMITED,
+    // The operation does not apply to this tournament's type (e.g. reportResult on a TALLY leaderboard).
+    TK_NOT_SUPPORTED_FOR_TYPE
 }
 
 // A typed error: a code plus a human-readable message.

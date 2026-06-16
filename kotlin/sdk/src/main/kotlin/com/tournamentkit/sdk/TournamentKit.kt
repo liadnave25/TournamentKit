@@ -10,6 +10,7 @@ import com.tournamentkit.sdk.net.JoinBody
 import com.tournamentkit.sdk.net.ReportBody
 import com.tournamentkit.sdk.net.RetrofitProvider
 import com.tournamentkit.sdk.net.StartBody
+import com.tournamentkit.sdk.net.TallyAddBody
 import com.tournamentkit.sdk.net.errorFromException
 import com.tournamentkit.sdk.net.errorFromResponse
 import com.tournamentkit.shared.Match
@@ -120,6 +121,12 @@ object TournamentKit {
             view.matches.firstOrNull { m -> m.id == matchId }
                 ?: throw IllegalStateException("confirmed match not found in response")
         }
+    }
+
+    // Adds points (may be negative) to a person on a TALLY leaderboard; returns their updated Standing.
+    fun addScore(tournamentId: String, userId: String, displayName: String, points: Int, callback: TKCallback<Standing>) {
+        if (requireInitialized(callback) == null) return
+        call(callback) { it.addScore(TallyAddBody(tournamentId, userId, displayName, points)) }
     }
 
     // Fetches the current tournament state.

@@ -46,6 +46,15 @@ data class ConfirmRequest(
     val userId: String
 )
 
+// POST /v1/tally/add — add points to a person on a TALLY leaderboard (points may be negative).
+@Serializable
+data class TallyAddRequest(
+    val tournamentId: String,
+    val userId: String,
+    val displayName: String,
+    val points: Int
+)
+
 // ---------- response bodies ----------
 
 // Full tournament view: the tournament plus its matches and standings.

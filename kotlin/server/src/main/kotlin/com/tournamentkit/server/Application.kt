@@ -15,6 +15,7 @@ import com.tournamentkit.server.service.DevSeedService
 import com.tournamentkit.server.service.PortalService
 import com.tournamentkit.server.service.RateLimiter
 import com.tournamentkit.server.service.ReportService
+import com.tournamentkit.server.service.TallyService
 import com.tournamentkit.server.service.TournamentService
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -50,6 +51,7 @@ fun Application.module() {
     val auditRepo = AuditRepository(db)
     val tournamentService = TournamentService(projects, tournamentRepo)
     val reportService = ReportService(db)
+    val tallyService = TallyService(db)
     val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService)
     val devSeed = DevSeedService(projects)
 
@@ -61,7 +63,7 @@ fun Application.module() {
         get("/health") { call.respondText("OK") }
 
         // Authenticated public API (API key), rate-limited per key/IP.
-        publicRoutes(projects, ratings, tournamentService, reportService, rateLimiter)
+        publicRoutes(projects, ratings, tournamentService, reportService, tallyService, rateLimiter)
 
         // Portal management API (Firebase ID token + project ownership).
         portalRoutes(projects, portalService, tournamentService)

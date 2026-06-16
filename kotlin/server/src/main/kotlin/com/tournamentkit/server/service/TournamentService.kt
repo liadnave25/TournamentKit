@@ -28,19 +28,24 @@ class TournamentService(
         val template = projects.getTemplate(projectId, templateId)
             ?: throw TKException(TKErrorCode.TK_TOURNAMENT_NOT_FOUND, "template $templateId not found")
 
+        // TALLY is a leaderboard with no matches/draw/bracket: it has no REGISTRATION→start→draw
+        // lifecycle, so create it ACTIVE immediately with an empty participants/standings set
+        // (people are auto-added on their first tally/add).
+        val tally = template.type == TemplateType.TALLY
+
         val tournament = Tournament(
             id = UUID.randomUUID().toString(),
             projectId = projectId,
             templateId = templateId,
             name = name,
             joinCode = JoinCode.generate(),
-            status = TournamentStatus.REGISTRATION,
-            // The creator is the first participant.
-            participants = listOf(Participant(userId, displayName)),
+            status = if (tally) TournamentStatus.ACTIVE else TournamentStatus.REGISTRATION,
+            // Match-based tournaments auto-join the creator; a TALLY board starts with nobody.
+            participants = if (tally) emptyList() else listOf(Participant(userId, displayName)),
             // Snapshot the rules NOW so later template edits never change a running tournament (spec §6).
             rules = template,
             createdAt = System.currentTimeMillis(),
-            startedAt = null
+            startedAt = if (tally) System.currentTimeMillis() else null
         )
         tournaments.put(tournament)
         return tournament
@@ -74,6 +79,9 @@ class TournamentService(
         val t = tournaments.get(tournamentId)
             ?: throw TKException(TKErrorCode.TK_TOURNAMENT_NOT_FOUND, "tournament $tournamentId not found")
 
+        // TALLY has nothing to draw: starting it is a no-op (it is already ACTIVE from create).
+        if (t.rules.type == TemplateType.TALLY) return t
+
         // Only the creator (first participant) may start the tournament.
         if (t.participants.firstOrNull()?.userId != actingUserId) {
             throw TKException(TKErrorCode.TK_NOT_AUTHENTICATED, "only the creator may start the tournament")
@@ -103,6 +111,8 @@ class TournamentService(
                 matches = draw.groups.flatMap { it.matches }
                 standings = blankStandings(t.participants)
             }
+            // Unreachable: TALLY returns above. Present only to keep the when exhaustive.
+            TemplateType.TALLY -> return t
         }
 
         tournaments.writeMatches(tournamentId, matches)
@@ -124,6 +134,10 @@ class TournamentService(
     fun standings(tournamentId: String): List<Standing> {
         val t = tournaments.get(tournamentId)
             ?: throw TKException(TKErrorCode.TK_TOURNAMENT_NOT_FOUND, "tournament $tournamentId not found")
+        // TALLY has no matches/GD/H2H: read the stored rows and sort by points desc (stable tiebreak by userId).
+        if (t.rules.type == TemplateType.TALLY) {
+            return tallySort(tournaments.getStandings(tournamentId))
+        }
         val confirmed = tournaments.getMatches(tournamentId)
         // Recompute order via the engine so the API always returns a sorted, tie-broken table.
         return com.tournamentkit.server.engine.recalcStandings(t.participants, confirmed, t.rules)

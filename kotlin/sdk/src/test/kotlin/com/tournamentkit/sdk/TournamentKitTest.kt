@@ -111,6 +111,26 @@ class TournamentKitTest {
         assertEquals("u1", rows[0].userId)
     }
 
+    @Test
+    fun addScore_returns_the_updated_standing() {
+        // TALLY add returns just the user's Standing row (points is the running total).
+        val body = """{ "userId": "u9", "played": 0, "won": 0, "drawn": 0, "lost": 0,
+                        "pointsFor": 0, "pointsAgainst": 0, "points": 7 }"""
+        server.enqueue(MockResponse().setResponseCode(200).setBody(body))
+        val (s, err) = await<Standing> { TournamentKit.addScore("t1", "u9", "Eve", 7, it) }
+        assertNull(err)
+        assertEquals("u9", s!!.userId)
+        assertEquals(7, s.points)
+    }
+
+    @Test
+    fun addScore_on_non_tally_maps_to_not_supported_for_type() {
+        val body = """{ "code": "TK_NOT_SUPPORTED_FOR_TYPE", "message": "tally/add only applies to TALLY tournaments" }"""
+        server.enqueue(MockResponse().setResponseCode(400).setBody(body))
+        val (_, err) = await<Standing> { TournamentKit.addScore("t1", "u9", "Eve", 7, it) }
+        assertEquals(TKErrorCode.TK_NOT_SUPPORTED_FOR_TYPE, err!!.code)
+    }
+
     // ---------- auth headers ----------
 
     @Test

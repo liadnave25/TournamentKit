@@ -8,6 +8,7 @@ import com.tournamentkit.server.data.RatingRepository
 import com.tournamentkit.server.engine.EloCalculator
 import com.tournamentkit.server.service.RateLimiter
 import com.tournamentkit.server.service.ReportService
+import com.tournamentkit.server.service.TallyService
 import com.tournamentkit.server.service.TournamentService
 import io.ktor.server.application.call
 import io.ktor.server.application.install
@@ -26,6 +27,7 @@ fun Route.publicRoutes(
     ratings: RatingRepository,
     tournaments: TournamentService,
     reports: ReportService,
+    tally: TallyService,
     rateLimiter: RateLimiter
 ) {
     route("/v1") {
@@ -68,6 +70,13 @@ fun Route.publicRoutes(
             val body = call.receive<ConfirmRequest>()
             io { reports.confirm(call.projectId, body.tournamentId, body.matchId, body.userId) }
             call.respond(io { tournaments.view(body.tournamentId) })
+        }
+
+        // Add points to a person on a TALLY leaderboard (auto-joins them on first add).
+        post("/tally/add") {
+            val body = call.receive<TallyAddRequest>()
+            val standing = io { tally.add(body.tournamentId, body.userId, body.displayName, body.points) }
+            call.respond(standing)
         }
 
         // Full tournament view: tournament + matches + standings.

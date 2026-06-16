@@ -7,7 +7,9 @@ import kotlinx.serialization.Serializable
 enum class TemplateType {
     KNOCKOUT,
     LEAGUE,
-    GROUPS_KNOCKOUT
+    GROUPS_KNOCKOUT,
+    // Open-ended points leaderboard: no matches, no draw, no bracket — one op adds points to a person.
+    TALLY
 }
 
 // Points awarded for a win, a draw, and a loss.

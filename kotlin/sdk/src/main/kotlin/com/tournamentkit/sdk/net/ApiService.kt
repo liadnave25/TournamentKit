@@ -32,6 +32,10 @@ internal interface ApiService {
     @POST("v1/matches/confirm")
     suspend fun confirmResult(@Body body: ConfirmBody): Response<TournamentViewDto>
 
+    // Add points to a person on a TALLY leaderboard; returns that user's updated standing.
+    @POST("v1/tally/add")
+    suspend fun addScore(@Body body: TallyAddBody): Response<Standing>
+
     // Fetch the full tournament view (tournament + matches + standings).
     @GET("v1/tournaments/{id}")
     suspend fun getTournament(@Path("id") tournamentId: String): Response<TournamentViewDto>
