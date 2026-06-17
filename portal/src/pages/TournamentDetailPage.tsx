@@ -58,8 +58,10 @@ export function TournamentDetailPage() {
 
   const { tournament, matches, standings } = view.data;
   const type = tournament.rules.type;
+  // TALLY is a points leaderboard with no matches: no bracket, no match list — just standings.
+  const isTally = type === "TALLY";
   const showBracket = type === "KNOCKOUT" || type === "GROUPS_KNOCKOUT";
-  const showTable = type === "LEAGUE" || type === "GROUPS_KNOCKOUT";
+  const showTable = type === "LEAGUE" || type === "GROUPS_KNOCKOUT" || isTally;
   // Knockout matches advance someone; group matches don't — split them for groups→knockout.
   const knockoutMatches = matches.filter((m) => m.nextMatchId != null || isFinalLike(m, matches));
 
@@ -80,7 +82,8 @@ export function TournamentDetailPage() {
         )}
       </div>
       <div style={{ color: "var(--tk-muted)", fontSize: 13, marginBottom: 8 }}>
-        {type} · code <span className="tk-num">{tournament.joinCode}</span> · {tournament.participants.length} participants
+        {isTally ? "TALLY · points leaderboard" : <>{type} · code <span className="tk-num">{tournament.joinCode}</span></>}
+        {" · "}{tournament.participants.length} participants
       </div>
       {actionError && <div style={{ marginBottom: 14 }}><ErrorState message={actionError} /></div>}
 
@@ -96,13 +99,14 @@ export function TournamentDetailPage() {
       )}
 
       {showTable && (
-        <Section title="Standings">
+        <Section title={isTally ? "Leaderboard" : "Standings"}>
           <LeagueTableView standings={standings} nameOf={nameOf} />
         </Section>
       )}
 
-      {/* For league/groups the matches don't form a bracket; list them so overrides are reachable. */}
-      {type !== "KNOCKOUT" && (
+      {/* For league/groups the matches don't form a bracket; list them so overrides are reachable.
+          TALLY has no matches at all, so it's skipped here. */}
+      {type !== "KNOCKOUT" && !isTally && (
         <Section title="Matches">
           <MatchList matches={type === "GROUPS_KNOCKOUT" ? matches.filter((m) => m.nextMatchId == null) : matches}
             nameOf={nameOf} onOverride={(m) => setOverriding(m)} />

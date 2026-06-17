@@ -26,7 +26,7 @@ class MappersTest {
         }
     }
 
-    private val template = Template("tmpl", TemplateType.LEAGUE, Scoring(3, 1, 0), 16, true, 48)
+    private val template = Template("tmpl", TemplateType.LEAGUE, Scoring(3, 1, 0), 16)
 
     @Test
     fun template_round_trips() {

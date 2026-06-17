@@ -9,7 +9,7 @@ import { Loading, Empty, ErrorState } from "../components/StateBlock";
 import { Dialog } from "../components/Dialog";
 import type { Template, TemplateType } from "../lib/types";
 
-const TYPES: TemplateType[] = ["KNOCKOUT", "LEAGUE", "GROUPS_KNOCKOUT"];
+const TYPES: TemplateType[] = ["KNOCKOUT", "LEAGUE", "GROUPS_KNOCKOUT", "TALLY"];
 
 export function TemplatesPage() {
   const pid = usePid();
@@ -97,6 +97,17 @@ function TemplateForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // TALLY ignores scoring/maxParticipants at runtime, but the server still validates them.
+  const isTally = type === "TALLY";
+
+  // Changes the type; switching to TALLY drops scoring/max to valid no-op defaults so the form submits cleanly.
+  const onTypeChange = (next: TemplateType) => {
+    setType(next);
+    if (next === "TALLY") {
+      setWin(0); setDraw(0); setLoss(0); setMax(2);
+    }
+  };
+
   // Client-side validation matching the server (scoring ≥ 0, max ≥ 2, timeout ≥ 0).
   const fieldErrors: Record<string, string> = {};
   if (win < 0) fieldErrors.win = "must be ≥ 0";
@@ -134,10 +145,17 @@ function TemplateForm({
     <Dialog title={existing ? "Edit template" : "New template"} onClose={onClose}>
       <form onSubmit={onSubmit}>
         <Field label="Type">
-          <select className="tk-input" value={type} onChange={(e) => setType(e.target.value as TemplateType)}>
+          <select className="tk-input" value={type} onChange={(e) => onTypeChange(e.target.value as TemplateType)}>
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </Field>
+
+        {isTally && (
+          <div style={{ color: "var(--tk-muted)", fontSize: 13, marginTop: -4, marginBottom: 12 }}>
+            TALLY is an open-ended points leaderboard — scoring and max participants are not used by it
+            (players accumulate points via the SDK). The values below are kept only to satisfy the form.
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
           <NumberField label="Win" value={win} onChange={setWin} error={fieldErrors.win} />

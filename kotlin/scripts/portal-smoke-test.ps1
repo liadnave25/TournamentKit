@@ -72,7 +72,7 @@ $A = @{ "X-TK-API-KEY" = $seed.apiKey; "X-TK-PROJECT-ID" = $projId }
 $templates = Api GET "/portal/projects/$projId/templates" $null $P
 Check ($templates.Count -ge 2) "portal lists the seeded templates (>=2, got $($templates.Count))"
 
-$newTmpl = Api POST "/portal/projects/$projId/templates" @{ type = "KNOCKOUT"; scoring = @{ win = 3; draw = 1; loss = 0 }; maxParticipants = 8; requireConfirmation = $false; reportTimeoutHours = 24 } $P
+$newTmpl = Api POST "/portal/projects/$projId/templates" @{ type = "KNOCKOUT"; scoring = @{ win = 3; draw = 1; loss = 0 }; maxParticipants = 8 } $P
 Check ($null -ne $newTmpl.id) "portal created a template ($($newTmpl.id))"
 
 # ---------- 3. /v1: create + start a knockout (API key) ----------

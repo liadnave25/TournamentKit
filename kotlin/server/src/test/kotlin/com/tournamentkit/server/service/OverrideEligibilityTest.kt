@@ -9,9 +9,8 @@ import org.junit.Test
 class OverrideEligibilityTest {
 
     @Test
-    fun pending_or_reported_is_always_overridable() {
+    fun pending_is_always_overridable() {
         assertTrue(overrideAllowed(MatchStatus.PENDING, TemplateType.KNOCKOUT, hasNextMatch = true, downstreamStatus = MatchStatus.PENDING))
-        assertTrue(overrideAllowed(MatchStatus.REPORTED, TemplateType.KNOCKOUT, hasNextMatch = true, downstreamStatus = MatchStatus.PENDING))
     }
 
     @Test
@@ -35,7 +34,6 @@ class OverrideEligibilityTest {
     @Test
     fun confirmed_knockout_with_played_downstream_is_refused() {
         // The winner already advanced and played on — no cascading rollback.
-        assertFalse(overrideAllowed(MatchStatus.CONFIRMED, TemplateType.KNOCKOUT, hasNextMatch = true, downstreamStatus = MatchStatus.REPORTED))
         assertFalse(overrideAllowed(MatchStatus.CONFIRMED, TemplateType.KNOCKOUT, hasNextMatch = true, downstreamStatus = MatchStatus.CONFIRMED))
     }
 }

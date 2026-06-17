@@ -23,9 +23,9 @@ class ProgressionEngineTest {
         (1..n).map { Participant(userId = "p$it", displayName = "Player $it") }
 
     private val knockoutRules =
-        Template("t", TemplateType.KNOCKOUT, Scoring(3, 1, 0), 16, false, 48)
+        Template("t", TemplateType.KNOCKOUT, Scoring(3, 1, 0), 16)
     private val leagueRules =
-        Template("t", TemplateType.LEAGUE, Scoring(3, 1, 0), 16, false, 48)
+        Template("t", TemplateType.LEAGUE, Scoring(3, 1, 0), 16)
 
     // Confirms a league match between home/away with the given score.
     private fun confirmed(id: String, home: String, away: String, h: Int, a: Int): Match =

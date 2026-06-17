@@ -9,11 +9,11 @@ data class TKScore(
     val away: Int
 )
 
-// Where a match stands: not yet played, reported, or confirmed.
+// Where a match stands: not yet played (PENDING) or final result entered (CONFIRMED).
+// Single-writer model: a reported result is final immediately — there is no intermediate state.
 @Serializable
 enum class MatchStatus {
     PENDING,
-    REPORTED,
     CONFIRMED
 }
 

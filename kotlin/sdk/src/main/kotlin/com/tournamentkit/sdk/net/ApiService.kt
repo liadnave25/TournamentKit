@@ -24,13 +24,9 @@ internal interface ApiService {
     @POST("v1/tournaments/{id}/start")
     suspend fun startTournament(@Path("id") tournamentId: String, @Body body: StartBody): Response<Tournament>
 
-    // Report a match result; returns the full updated tournament view.
+    // Report a match result (final immediately); returns the full updated tournament view.
     @POST("v1/matches/report")
     suspend fun reportResult(@Body body: ReportBody): Response<TournamentViewDto>
-
-    // Confirm a previously reported result; returns the full updated tournament view.
-    @POST("v1/matches/confirm")
-    suspend fun confirmResult(@Body body: ConfirmBody): Response<TournamentViewDto>
 
     // Add points to a person on a TALLY leaderboard; returns that user's updated standing.
     @POST("v1/tally/add")

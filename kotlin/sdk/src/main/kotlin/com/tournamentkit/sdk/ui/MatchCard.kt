@@ -118,7 +118,7 @@ private fun ByeRow() {
     }
 }
 
-// A small status label: PENDING / REPORTED / CONFIRMED, or AWAITING OPPONENT for a TBD pairing.
+// A small status label: PENDING / CONFIRMED, or AWAITING OPPONENT for a TBD pairing.
 @Composable
 private fun StatusChip(match: Match, isBye: Boolean) {
     val colors = TK.colors
@@ -126,7 +126,6 @@ private fun StatusChip(match: Match, isBye: Boolean) {
     val (text, dot) = when {
         hasTbd -> "AWAITING OPPONENT" to colors.muted
         match.status == MatchStatus.CONFIRMED -> "CONFIRMED" to colors.winner
-        match.status == MatchStatus.REPORTED -> "REPORTED" to colors.pending
         else -> "PENDING" to colors.muted
     }
     Row(

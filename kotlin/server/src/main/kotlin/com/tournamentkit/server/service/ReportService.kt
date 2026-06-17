@@ -23,19 +23,15 @@ import com.tournamentkit.shared.TKScore
 import com.tournamentkit.shared.TournamentStatus
 import com.tournamentkit.server.engine.Outcome as EngineOutcome
 
-// Handles reporting, confirming, and admin-overriding results — the only place that mutates
-// match/standing/rating state. Every path runs through one Firestore transaction.
+// Handles reporting and admin-overriding results — the only place that mutates match/standing/
+// rating state. Single-writer model: a reported result is final (CONFIRMED) immediately; there is
+// no player-confirmation step. Every path runs through one Firestore transaction.
 class ReportService(private val db: Firestore) {
 
-    // Reports a score. If the template requires confirmation, this only marks the match REPORTED;
-    // otherwise it immediately runs the full progression transaction.
+    // Reports a score and immediately finalizes it: validate → progression (winner/standings/ELO) →
+    // write the match CONFIRMED, all in one transaction. There is no intermediate REPORTED state.
     fun report(projectId: String, tournamentId: String, matchId: String, userId: String, score: TKScore) {
-        runResultTransaction(projectId, tournamentId, matchId, userId, score, confirming = false)
-    }
-
-    // Confirms a previously REPORTED result (the OTHER player). Runs the full progression transaction.
-    fun confirm(projectId: String, tournamentId: String, matchId: String, userId: String) {
-        runResultTransaction(projectId, tournamentId, matchId, userId, score = null, confirming = true)
+        runResultTransaction(projectId, tournamentId, matchId, userId, score)
     }
 
     // Admin override (portal): apply a result regardless of who reports it, with an audit reason.
@@ -44,20 +40,19 @@ class ReportService(private val db: Firestore) {
         require(reason.isNotBlank()) { "override reason is required" }
         runResultTransaction(
             projectId, tournamentId, matchId,
-            userId = adminUid, score = score, confirming = false,
+            userId = adminUid, score = score,
             adminOverride = true, adminReason = reason
         )
     }
 
-    // The single atomic operation behind report/confirm/override. EVERYTHING below happens in ONE transaction.
+    // The single atomic operation behind report/override. EVERYTHING below happens in ONE transaction.
     // Firestore rule: ALL reads must come before ANY writes — the code is split into a read phase then a write phase.
     private fun runResultTransaction(
         projectId: String,
         tournamentId: String,
         matchId: String,
         userId: String,
-        score: TKScore?,
-        confirming: Boolean,
+        score: TKScore,
         adminOverride: Boolean = false,
         adminReason: String? = null
     ) = unwrapping {
@@ -108,28 +103,8 @@ class ReportService(private val db: Firestore) {
                 }
             }
 
-            // ----- Confirmation flow (report/confirm only) -----
-
-            // Case A: confirmation required, this is the first report -> just mark REPORTED, no progression.
-            if (!adminOverride && rules.requireConfirmation && !confirming) {
-                val reported = match.copy(score = score, status = MatchStatus.REPORTED)
-                tx.set(matchRef, reported.toMap())
-                return@runTransaction
-            }
-            // Case B: confirm() called but the template does not require confirmation -> invalid.
-            if (!adminOverride && !rules.requireConfirmation && confirming) {
-                throw TKException(TKErrorCode.TK_INVALID_SCORE, "this template does not require confirmation")
-            }
-            // Case C: confirming -> a score must already exist on the match.
-            val effectiveScore: TKScore = when {
-                confirming -> {
-                    if (match.status != MatchStatus.REPORTED || match.score == null) {
-                        throw TKException(TKErrorCode.TK_INVALID_SCORE, "match is not awaiting confirmation")
-                    }
-                    match.score!!
-                }
-                else -> score ?: throw TKException(TKErrorCode.TK_INVALID_SCORE, "score is required")
-            }
+            // Single-writer: the reported score is final immediately (no REPORTED intermediate state).
+            val effectiveScore: TKScore = score
 
             // Validate the score against the rules (throws TK_INVALID_SCORE on a knockout draw, negatives, etc.).
             val decision = decideWinner(match.copy(status = MatchStatus.PENDING), effectiveScore, rules)

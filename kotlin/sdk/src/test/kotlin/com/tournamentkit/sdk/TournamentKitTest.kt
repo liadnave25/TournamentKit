@@ -1,6 +1,7 @@
 package com.tournamentkit.sdk
 
 import com.tournamentkit.shared.Match
+import com.tournamentkit.shared.MatchStatus
 import com.tournamentkit.shared.Participant
 import com.tournamentkit.shared.Standing
 import com.tournamentkit.shared.TKError
@@ -46,7 +47,7 @@ class TournamentKitTest {
           "joinCode": "ABC234", "status": "$status",
           "participants": [ { "userId": "u1", "displayName": "Alice" } ],
           "rules": { "id": "tmpl", "type": "KNOCKOUT", "scoring": {"win":3,"draw":1,"loss":0},
-                     "maxParticipants": 8, "requireConfirmation": false, "reportTimeoutHours": 48 },
+                     "maxParticipants": 8 },
           "createdAt": 1700000000000 }
     """.trimIndent()
 
@@ -92,12 +93,17 @@ class TournamentKitTest {
     }
 
     @Test
-    fun reportResult_returns_the_reported_match() {
+    fun reportResult_returns_a_confirmed_match_immediately() {
+        // Single-writer model: one reportResult finalizes the match (CONFIRMED) — there is no confirm step.
         server.enqueue(MockResponse().setResponseCode(200).setBody(tournamentViewJson()))
         val (m, err) = await<Match> { TournamentKit.reportResult("t1", "r1-s0", TKScore(2, 1), it) }
         assertNull(err)
         assertEquals("r1-s0", m!!.id)
         assertEquals(2, m.score!!.home)
+        assertEquals(MatchStatus.CONFIRMED, m.status)
+        // The same call requested the report endpoint (no /confirm round-trip).
+        val recorded = server.takeRequest(5, TimeUnit.SECONDS)!!
+        assertEquals("/v1/matches/report", recorded.path)
     }
 
     @Test

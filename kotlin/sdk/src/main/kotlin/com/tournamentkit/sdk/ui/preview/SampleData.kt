@@ -23,7 +23,8 @@ object SampleData {
     // ---- single match examples (one per state) ----
 
     val matchPending = Match("r1-s0", 1, 0, "p1", "p2", null, MatchStatus.PENDING, "r2-s0")
-    val matchReported = Match("r1-s1", 1, 1, "p3", "p4", TKScore(2, 1), MatchStatus.REPORTED, "r2-s0")
+    // A played match: in the single-writer model a reported result is final (CONFIRMED) immediately.
+    val matchReported = Match("r1-s1", 1, 1, "p3", "p4", TKScore(2, 1), MatchStatus.CONFIRMED, "r2-s0")
     val matchConfirmed = Match("r1-s2", 1, 2, "p5", "p6", TKScore(3, 0), MatchStatus.CONFIRMED, "r2-s1")
     val matchBye = Match("r1-s3", 1, 3, "p7", null, null, MatchStatus.CONFIRMED, "r2-s1")
     val matchTbd = Match("r2-s0", 2, 0, "", "", null, MatchStatus.PENDING, "r3-s0")

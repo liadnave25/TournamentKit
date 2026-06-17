@@ -26,7 +26,5 @@ data class Template(
     val id: String,
     val type: TemplateType,
     val scoring: Scoring,
-    val maxParticipants: Int,
-    val requireConfirmation: Boolean,
-    val reportTimeoutHours: Int
+    val maxParticipants: Int
 )

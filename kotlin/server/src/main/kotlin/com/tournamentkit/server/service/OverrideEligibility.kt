@@ -7,7 +7,7 @@ import com.tournamentkit.shared.TemplateType
 // Pure function (no I/O) so it can be unit-tested in isolation.
 //
 // Rules:
-//  - PENDING / REPORTED match: always overridable (it behaves like an admin-entered report).
+//  - PENDING (not-yet-final) match: always overridable (it behaves like an admin-entered report).
 //  - CONFIRMED knockout match: overridable only if its winner has NOT already played on — i.e. the
 //    nextMatchId target is still PENDING (or there is no next match, i.e. the final).
 //  - CONFIRMED league/groups match: always overridable, because standings are a pure recompute.

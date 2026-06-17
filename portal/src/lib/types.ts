@@ -12,6 +12,7 @@ export type TKErrorCode =
   | "TK_TOURNAMENT_FULL"
   | "TK_MATCH_ALREADY_REPORTED"
   | "TK_NOT_PARTICIPANT"
+  | "TK_NOT_SUPPORTED_FOR_TYPE"
   | "TK_UNKNOWN";
 
 export interface TKErrorBody {
@@ -33,8 +34,8 @@ export interface CreateProjectResponse {
   apiKey: string;
 }
 
-// Tournament template (GET/POST /templates).
-export type TemplateType = "KNOCKOUT" | "LEAGUE" | "GROUPS_KNOCKOUT";
+// Tournament template (GET/POST /templates). TALLY is an open-ended points leaderboard with no matches.
+export type TemplateType = "KNOCKOUT" | "LEAGUE" | "GROUPS_KNOCKOUT" | "TALLY";
 export interface Template {
   id: string;
   type: TemplateType;

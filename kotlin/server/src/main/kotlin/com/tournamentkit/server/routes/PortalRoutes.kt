@@ -161,7 +161,7 @@ private fun ApplicationCall.ownedProject(projects: ProjectRepository): String {
 
 // Builds a Template from the request body with the resolved id.
 private fun TemplateRequest.toTemplate(id: String): Template =
-    Template(id, type, scoring, maxParticipants, requireConfirmation, reportTimeoutHours)
+    Template(id, type, scoring, maxParticipants)
 
 // Converts an arbitrary Firestore value into a JSON element for audit-log responses.
 private fun Any?.toJson(): JsonElement = when (this) {

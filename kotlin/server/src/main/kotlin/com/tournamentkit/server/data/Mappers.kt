@@ -40,20 +40,16 @@ fun Template.toMap(): Map<String, Any?> = mapOf(
     "id" to id,
     "type" to type.name,
     "scoring" to scoring.toMap(),
-    "maxParticipants" to maxParticipants,
-    "requireConfirmation" to requireConfirmation,
-    "reportTimeoutHours" to reportTimeoutHours
+    "maxParticipants" to maxParticipants
 )
 
-// Rebuilds Template from a Firestore map.
+// Rebuilds Template from a Firestore map (ignores any legacy confirmation/timeout fields).
 @Suppress("UNCHECKED_CAST")
 fun templateFromMap(m: Map<String, Any?>): Template = Template(
     id = m["id"] as String,
     type = TemplateType.valueOf(m["type"] as String),
     scoring = scoringFromMap(m["scoring"] as Map<String, Any?>),
-    maxParticipants = m.int("maxParticipants"),
-    requireConfirmation = m["requireConfirmation"] as Boolean,
-    reportTimeoutHours = m.int("reportTimeoutHours")
+    maxParticipants = m.int("maxParticipants")
 )
 
 // ---------- Participant ----------

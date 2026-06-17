@@ -17,23 +17,19 @@ class DevSeedService(private val projects: ProjectRepository) {
         val apiKey = "dev-key"
         projects.upsertProject(projectId, name = "Dev Project", apiKeyHash = ApiKey.sha256(apiKey), ownerUid = ownerUid)
 
-        // Knockout template — decisive results, no confirmation step.
+        // Knockout template — decisive results entered directly (single-writer).
         val knockout = Template(
             id = "tmpl-knockout",
             type = TemplateType.KNOCKOUT,
             scoring = Scoring(win = 3, draw = 1, loss = 0),
-            maxParticipants = 16,
-            requireConfirmation = false,
-            reportTimeoutHours = 48
+            maxParticipants = 16
         )
-        // League template — standard 3/1/0 scoring, no confirmation step.
+        // League template — standard 3/1/0 scoring, results entered directly (single-writer).
         val league = Template(
             id = "tmpl-league",
             type = TemplateType.LEAGUE,
             scoring = Scoring(win = 3, draw = 1, loss = 0),
-            maxParticipants = 16,
-            requireConfirmation = false,
-            reportTimeoutHours = 48
+            maxParticipants = 16
         )
         projects.putTemplate(projectId, knockout)
         projects.putTemplate(projectId, league)

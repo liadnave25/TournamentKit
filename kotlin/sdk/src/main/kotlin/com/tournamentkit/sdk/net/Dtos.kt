@@ -38,13 +38,6 @@ internal data class ReportBody(
 )
 
 @Serializable
-internal data class ConfirmBody(
-    val tournamentId: String,
-    val matchId: String,
-    val userId: String
-)
-
-@Serializable
 internal data class TallyAddBody(
     val tournamentId: String,
     val userId: String,

@@ -59,16 +59,10 @@ fun Route.publicRoutes(
         }
 
         // Report a match result (the heart of the system — runs the progression transaction).
+        // Single-writer: the result is final (CONFIRMED) immediately; there is no confirm step.
         post("/matches/report") {
             val body = call.receive<ReportRequest>()
             io { reports.report(call.projectId, body.tournamentId, body.matchId, body.userId, body.score) }
-            call.respond(io { tournaments.view(body.tournamentId) })
-        }
-
-        // Confirm a previously reported result (the other player).
-        post("/matches/confirm") {
-            val body = call.receive<ConfirmRequest>()
-            io { reports.confirm(call.projectId, body.tournamentId, body.matchId, body.userId) }
             call.respond(io { tournaments.view(body.tournamentId) })
         }
 

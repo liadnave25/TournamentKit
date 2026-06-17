@@ -38,14 +38,6 @@ data class ReportRequest(
     val score: TKScore
 )
 
-// POST /v1/matches/confirm
-@Serializable
-data class ConfirmRequest(
-    val tournamentId: String,
-    val matchId: String,
-    val userId: String
-)
-
 // POST /v1/tally/add — add points to a person on a TALLY leaderboard (points may be negative).
 @Serializable
 data class TallyAddRequest(

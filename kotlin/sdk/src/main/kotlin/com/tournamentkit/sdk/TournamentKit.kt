@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.tournamentkit.sdk.net.ApiService
-import com.tournamentkit.sdk.net.ConfirmBody
 import com.tournamentkit.sdk.net.CreateTournamentBody
 import com.tournamentkit.sdk.net.JoinBody
 import com.tournamentkit.sdk.net.ReportBody
@@ -105,21 +104,13 @@ object TournamentKit {
         call(callback) { it.startTournament(tournamentId, StartBody(u.userId)) }
     }
 
-    // Reports a match result; returns the reported Match from the updated tournament view.
+    // Reports a match result; it is final immediately (CONFIRMED). Returns the reported Match
+    // from the updated tournament view. Single-writer model: there is no confirmation step.
     fun reportResult(tournamentId: String, matchId: String, score: TKScore, callback: TKCallback<Match>) {
         val u = requireReady(callback) ?: return
         callMapped(callback, { it.reportResult(ReportBody(tournamentId, matchId, u.userId, score)) }) { view ->
             view.matches.firstOrNull { m -> m.id == matchId }
                 ?: throw IllegalStateException("reported match not found in response")
-        }
-    }
-
-    // Confirms a previously reported result (the other player); returns the confirmed Match.
-    fun confirmResult(tournamentId: String, matchId: String, callback: TKCallback<Match>) {
-        val u = requireReady(callback) ?: return
-        callMapped(callback, { it.confirmResult(ConfirmBody(tournamentId, matchId, u.userId)) }) { view ->
-            view.matches.firstOrNull { m -> m.id == matchId }
-                ?: throw IllegalStateException("confirmed match not found in response")
         }
     }
 

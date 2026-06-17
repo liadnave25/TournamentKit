@@ -37,7 +37,7 @@ fun decideWinner(match: Match, score: TKScore, rules: Template): WinnerDecision 
 // Confirms a knockout match and reports who advances where (or that the tournament is finished).
 fun progressKnockout(match: Match, score: TKScore, allMatches: List<Match>): ProgressionResult {
     // Knockout always uses decisive scoring; build a throwaway rule just to reuse decideWinner's checks.
-    val knockoutRules = Template("", TemplateType.KNOCKOUT, com.tournamentkit.shared.Scoring(3, 1, 0), 0, false, 0)
+    val knockoutRules = Template("", TemplateType.KNOCKOUT, com.tournamentkit.shared.Scoring(3, 1, 0), 0)
     val decision = decideWinner(match, score, knockoutRules)
     val winnerId = decision.winnerId!!   // never null in knockout (draws are rejected above)
 
