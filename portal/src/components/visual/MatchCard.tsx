@@ -140,7 +140,6 @@ function Footer({
 function statusLabel(match: Match, hasTbd: boolean): { text: string; color: string } {
   if (hasTbd) return { text: "AWAITING OPPONENT", color: "var(--tk-muted)" };
   if (match.status === "CONFIRMED") return { text: "CONFIRMED", color: "var(--tk-winner)" };
-  if (match.status === "REPORTED") return { text: "REPORTED", color: "var(--tk-info)" };
   return { text: "PENDING", color: "var(--tk-muted)" };
 }
 

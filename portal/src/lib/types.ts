@@ -41,8 +41,6 @@ export interface Template {
   type: TemplateType;
   scoring: { win: number; draw: number; loss: number };
   maxParticipants: number;
-  requireConfirmation: boolean;
-  reportTimeoutHours: number;
 }
 
 // Lightweight tournament row (GET /tournaments).
@@ -69,8 +67,8 @@ export interface TKScore {
   away: number;
 }
 
-// Where a match stands.
-export type MatchStatus = "PENDING" | "REPORTED" | "CONFIRMED";
+// Where a match stands. Single-writer model: a reported result is final immediately — no REPORTED step.
+export type MatchStatus = "PENDING" | "CONFIRMED";
 
 // One game: two sides, an optional score, and a pointer to where the winner advances.
 // awayId === null is a BYE; an empty-string id ("") is a not-yet-known (TBD) slot.

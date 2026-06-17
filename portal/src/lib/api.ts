@@ -20,8 +20,6 @@ export interface TemplateInput {
   type: Template["type"];
   scoring: { win: number; draw: number; loss: number };
   maxParticipants: number;
-  requireConfirmation: boolean;
-  reportTimeoutHours: number;
 }
 
 // The server to talk to: VITE_API_BASE_URL, or the deployed Cloud Run server by default.

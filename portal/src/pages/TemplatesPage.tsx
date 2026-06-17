@@ -72,7 +72,6 @@ function TemplateRow({ t, onEdit, onDelete }: { t: Template; onEdit: () => void;
         </div>
         <div style={{ color: "var(--tk-muted)", fontSize: 13, marginTop: 4 }}>
           Win {t.scoring.win} · Draw {t.scoring.draw} · Loss {t.scoring.loss} · Max {t.maxParticipants}
-          {t.requireConfirmation ? " · confirm required" : ""} · {t.reportTimeoutHours}h to report
         </div>
       </div>
       <button className="tk-btn tk-btn-ghost" onClick={onEdit}>Edit</button>
@@ -92,8 +91,6 @@ function TemplateForm({
   const [draw, setDraw] = useState(existing?.scoring.draw ?? 1);
   const [loss, setLoss] = useState(existing?.scoring.loss ?? 0);
   const [maxParticipants, setMax] = useState(existing?.maxParticipants ?? 8);
-  const [requireConfirmation, setConfirm] = useState(existing?.requireConfirmation ?? false);
-  const [reportTimeoutHours, setTimeout_] = useState(existing?.reportTimeoutHours ?? 48);
   const [serverError, setServerError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -108,13 +105,12 @@ function TemplateForm({
     }
   };
 
-  // Client-side validation matching the server (scoring ≥ 0, max ≥ 2, timeout ≥ 0).
+  // Client-side validation matching the server (scoring ≥ 0, max ≥ 2).
   const fieldErrors: Record<string, string> = {};
   if (win < 0) fieldErrors.win = "must be ≥ 0";
   if (draw < 0) fieldErrors.draw = "must be ≥ 0";
   if (loss < 0) fieldErrors.loss = "must be ≥ 0";
   if (maxParticipants < 2) fieldErrors.maxParticipants = "must be ≥ 2";
-  if (reportTimeoutHours < 0) fieldErrors.reportTimeoutHours = "must be ≥ 0";
   const valid = Object.keys(fieldErrors).length === 0;
 
   // Submits create or update; the server is the source of truth, so its TKError is shown too.
@@ -127,8 +123,6 @@ function TemplateForm({
       type,
       scoring: { win, draw, loss },
       maxParticipants,
-      requireConfirmation,
-      reportTimeoutHours,
     };
     try {
       if (existing) await api.updateTemplate(pid, existing.id, body);
@@ -163,15 +157,9 @@ function TemplateForm({
           <NumberField label="Loss" value={loss} onChange={setLoss} error={fieldErrors.loss} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
           <NumberField label="Max participants" value={maxParticipants} onChange={setMax} error={fieldErrors.maxParticipants} />
-          <NumberField label="Report timeout (h)" value={reportTimeoutHours} onChange={setTimeout_} error={fieldErrors.reportTimeoutHours} />
         </div>
-
-        <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "14px 0" }}>
-          <input type="checkbox" checked={requireConfirmation} onChange={(e) => setConfirm(e.target.checked)} />
-          <span style={{ color: "var(--tk-on-surface)" }}>Require result confirmation by the opponent</span>
-        </label>
 
         {serverError && (
           <div role="alert" style={{ color: "var(--tk-danger)", fontSize: 14, marginBottom: 12 }}>{serverError}</div>
