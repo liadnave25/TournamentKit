@@ -27,7 +27,8 @@ object Paths {
 }
 
 // Reads/writes the project doc (used by auth and dev seeding).
-class ProjectRepository(private val db: Firestore) {
+// `open` so tests can substitute an in-memory fake for ownership checks.
+open class ProjectRepository(private val db: Firestore) {
 
     // Returns the stored apiKeyHash for a project, or null if the project does not exist.
     fun apiKeyHash(projectId: String): String? {
@@ -36,7 +37,7 @@ class ProjectRepository(private val db: Firestore) {
     }
 
     // Returns the project's owner uid, or null if the project does not exist / has no owner.
-    fun ownerUid(projectId: String): String? {
+    open fun ownerUid(projectId: String): String? {
         val snap = db.document(Paths.project(projectId)).get().get()
         return if (snap.exists()) snap.getString("ownerUid") else null
     }
@@ -98,7 +99,8 @@ class ProjectRepository(private val db: Firestore) {
 }
 
 // Reads/writes tournament documents and their match/standing sub-collections.
-class TournamentRepository(private val db: Firestore) {
+// `open` so tests can substitute an in-memory fake for the delete orchestration.
+open class TournamentRepository(private val db: Firestore) {
 
     // Writes (or overwrites) a tournament document.
     fun put(t: Tournament) {
@@ -106,7 +108,7 @@ class TournamentRepository(private val db: Firestore) {
     }
 
     // Loads a tournament by id, or null if missing.
-    fun get(tournamentId: String): Tournament? {
+    open fun get(tournamentId: String): Tournament? {
         val snap = db.document(Paths.tournament(tournamentId)).get().get()
         return if (snap.exists()) tournamentFromMap(snap.data!!) else null
     }
@@ -132,7 +134,7 @@ class TournamentRepository(private val db: Firestore) {
     }
 
     // Loads all matches of a tournament, ordered by round then slot.
-    fun getMatches(tournamentId: String): List<Match> {
+    open fun getMatches(tournamentId: String): List<Match> {
         val q = db.collection(Paths.matches(tournamentId)).get().get()
         return q.documents.map { matchFromMap(it.data!!) }
             .sortedWith(compareBy({ it.round }, { it.slot }))
@@ -148,7 +150,7 @@ class TournamentRepository(private val db: Firestore) {
     }
 
     // Loads all standing rows of a tournament (unsorted; the engine defines the order).
-    fun getStandings(tournamentId: String): List<Standing> {
+    open fun getStandings(tournamentId: String): List<Standing> {
         val q = db.collection(Paths.standings(tournamentId)).get().get()
         return q.documents.map { standingFromMap(it.data!!) }
     }
@@ -158,10 +160,24 @@ class TournamentRepository(private val db: Firestore) {
         val q = db.collection("tournaments").whereEqualTo("projectId", projectId).get().get()
         return q.documents.map { tournamentFromMap(it.data!!) }
     }
+
+    // Hard-deletes a tournament and everything it owns. Participants are a field on the tournament
+    // doc (so they vanish with it); matches, standings, and the auditLog are sub-collections, so each
+    // of their docs is deleted explicitly. All deletes (sub-collection docs + the tournament doc)
+    // go in ONE batched write so no orphan sub-doc can survive a deleted parent.
+    open fun delete(tournamentId: String) {
+        val batch = db.batch()
+        for (sub in listOf(Paths.matches(tournamentId), Paths.standings(tournamentId), Paths.auditLog(tournamentId))) {
+            for (doc in db.collection(sub).get().get().documents) batch.delete(doc.reference)
+        }
+        batch.delete(db.document(Paths.tournament(tournamentId)))
+        batch.commit().get()
+    }
 }
 
 // Appends audit-log entries to a tournament and reads them back.
-class AuditRepository(private val db: Firestore) {
+// `open` so tests can substitute an in-memory fake for the project-level delete audit.
+open class AuditRepository(private val db: Firestore) {
 
     // Appends one audit entry (auto-id) under the tournament's auditLog sub-collection.
     fun append(tournamentId: String, entry: Map<String, Any?>) {
@@ -169,7 +185,7 @@ class AuditRepository(private val db: Firestore) {
     }
 
     // Appends one audit entry under the project's auditLog (used for project-level actions like key rotation).
-    fun appendProject(projectId: String, entry: Map<String, Any?>) {
+    open fun appendProject(projectId: String, entry: Map<String, Any?>) {
         db.collection(Paths.projectAuditLog(projectId)).add(entry).get()
     }
 

@@ -62,8 +62,11 @@ TournamentKit.init(applicationContext, apiKey = "tk_live_…", projectId = "my-p
 // 2. Identify the current user of your app.
 TournamentKit.identify(userId = "user_42", displayName = "Liad")
 
-// 3. Create a tournament from a template defined in the portal (the creator auto-joins).
-TournamentKit.createTournament(
+// 3. Get-or-create a tournament for a slot identified by your own stable externalKey.
+//    The first call creates it and saves its id under that key; later calls reuse the saved id.
+//    Use a DIFFERENT externalKey per tournament you manage so their saved ids never collide.
+TournamentKit.getOrCreateTournament(
+    externalKey = "fifa_night",
     templateId = "tmpl-knockout",
     name = "FifaNight",
     callback = object : TKCallback<Tournament> {
@@ -113,10 +116,12 @@ All functions are on the `TournamentKit` object.
 | `init(context, apiKey, projectId, baseUrl = …, debugLogging = false)` | — (no network; stores config) |
 | `identify(userId, displayName)` | — (no network; sets the current user) |
 | `createTournament(templateId, name, callback)` | `Tournament` — created in `REGISTRATION`; creator auto-joins |
+| `getOrCreateTournament(externalKey, templateId, name, callback)` | `Tournament` — reuses the saved tournament for `externalKey`, or creates+saves a new one. Blank `externalKey` → `TK_INVALID_ARGUMENT` |
+| `clearSession(externalKey)` | — (no network; forgets the saved tournament id for that one key) |
+| `clearAllSessions()` | — (no network; forgets every saved tournament id) |
 | `joinTournament(joinCode, callback)` | `Participant` — the caller's entry in the tournament |
 | `startTournament(tournamentId, callback)` | `Tournament` — now `ACTIVE` with matches drawn |
 | `reportResult(tournamentId, matchId, score, callback)` | `Match` — the reported match |
-| `confirmResult(tournamentId, matchId, callback)` | `Match` — the confirmed match (when the template requires confirmation) |
 | `getTournament(tournamentId, callback)` | `Tournament` — current state |
 | `getStandings(tournamentId, callback)` | `List<Standing>` — sorted by the engine's tiebreakers |
 | `getUserRating(callback)` | `Int` — the identified user's cumulative ELO |

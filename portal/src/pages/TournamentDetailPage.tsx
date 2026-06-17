@@ -2,13 +2,14 @@
 // standings (league / groups), the participants, freeze/unfreeze, per-match result override, and the
 // audit log. All data comes from GET /tournaments/{tid}; actions refresh it.
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { usePid } from "../lib/usePid";
 import { useAsync } from "../lib/useAsync";
 import { Loading, ErrorState, Empty } from "../components/StateBlock";
 import { StatusChip } from "../components/StatusChip";
 import { OverrideDialog } from "../components/OverrideDialog";
+import { DeleteTournamentDialog } from "../components/DeleteTournamentDialog";
 import { AuditLog } from "../components/AuditLog";
 import { BracketView } from "../components/visual/BracketView";
 import { LeagueTableView } from "../components/visual/LeagueTableView";
@@ -17,6 +18,7 @@ import type { AuditEntry, Match, TournamentView } from "../lib/types";
 
 export function TournamentDetailPage() {
   const pid = usePid();
+  const navigate = useNavigate();
   const { tid } = useParams<{ tid: string }>();
   const tournamentId = tid as string;
 
@@ -24,6 +26,7 @@ export function TournamentDetailPage() {
   const audit = useAsync<AuditEntry[]>(() => api.getAudit(pid, tournamentId), [pid, tournamentId]);
 
   const [overriding, setOverriding] = useState<Match | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
 
@@ -80,6 +83,14 @@ export function TournamentDetailPage() {
         {tournament.status === "FROZEN" && (
           <button className="tk-btn tk-btn-primary" onClick={() => toggleFreeze(false)} disabled={actionBusy}>Unfreeze</button>
         )}
+        <button
+          className="tk-btn tk-btn-ghost"
+          style={{ color: "var(--tk-danger)" }}
+          onClick={() => setDeleting(true)}
+          disabled={actionBusy}
+        >
+          Delete
+        </button>
       </div>
       <div style={{ color: "var(--tk-muted)", fontSize: 13, marginBottom: 8 }}>
         {isTally ? "TALLY · points leaderboard" : <>{type} · code <span className="tk-num">{tournament.joinCode}</span></>}
@@ -140,6 +151,15 @@ export function TournamentDetailPage() {
           pid={pid} tid={tournamentId} match={overriding} nameOf={nameOf}
           onClose={() => setOverriding(null)}
           onApplied={() => { setOverriding(null); refreshAll(); }}
+        />
+      )}
+
+      {deleting && (
+        <DeleteTournamentDialog
+          pid={pid} tid={tournamentId} name={tournament.name}
+          onClose={() => setDeleting(false)}
+          // Deleted: leave the (now-gone) detail page and land on a freshly-loaded list.
+          onDeleted={() => navigate(`/projects/${pid}/tournaments`, { replace: true })}
         />
       )}
     </Pad>

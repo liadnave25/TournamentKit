@@ -33,6 +33,13 @@ object TournamentKit {
     private var config: TKConfig? = null
     private var api: ApiService? = null
 
+    // Internal storage for per-tournament saved IDs (spec §5 persistence). Each tournament slot is
+    // keyed by a developer-chosen externalKey so multiple tournaments never share one saved ID.
+    private var prefs: android.content.SharedPreferences? = null
+
+    // Prefix for every saved-tournament-id entry. The full key is PREFS_KEY_PREFIX + externalKey.
+    private const val PREFS_KEY_PREFIX = "tk_tournament_id_"
+
     // The current user from identify(); needed by calls that act on behalf of a player.
     private var user: TKUser? = null
 
@@ -54,8 +61,9 @@ object TournamentKit {
         baseUrl: String = DEFAULT_BASE_URL,
         debugLogging: Boolean = false
     ) {
-        @Suppress("UNUSED_VARIABLE")
-        val appContext = context.applicationContext  // held for future use (offline store, etc.)
+        val appContext = context.applicationContext
+        prefs = appContext.getSharedPreferences("tournament_kit_internal", Context.MODE_PRIVATE)
+
         val cfg = TKConfig(apiKey = apiKey, projectId = projectId, baseUrl = baseUrl, debugLogging = debugLogging)
         config = cfg
         api = RetrofitProvider.create(cfg.baseUrl, cfg.apiKey, cfg.projectId, cfg.debugLogging)
@@ -72,12 +80,19 @@ object TournamentKit {
         api = RetrofitProvider.create(baseUrl, apiKey, projectId, debugLogging = false)
     }
 
-    // Test seam: clears all state so each test starts from a clean, uninitialized SDK.
+    // Test seam: clears all state (including all saved tournament IDs via the prefs reference) so
+    // each test starts from a clean, uninitialized SDK.
     internal fun resetForTest() {
         config = null
         api = null
         user = null
+        prefs = null
         resultDispatcher = { r -> r.run() }
+    }
+
+    // Test seam: injects a SharedPreferences for persistence tests (initForTest has no Android Context).
+    internal fun setPrefsForTest(p: android.content.SharedPreferences) {
+        prefs = p
     }
 
     // ---------- public API (spec §3) ----------
@@ -86,6 +101,48 @@ object TournamentKit {
     fun createTournament(templateId: String, name: String, callback: TKCallback<Tournament>) {
         val u = requireReady(callback) ?: return
         call(callback) { it.createTournament(CreateTournamentBody(templateId, name, u.userId, u.displayName)) }
+    }
+
+    // High-level "Plug-and-Play" entry point for one tournament slot, identified by [externalKey]
+    // (a stable, developer-chosen id such as "weekly_tokens" or "football_league"). If this key has
+    // a saved tournament ID, fetches it; otherwise creates a new tournament and persists its ID under
+    // this key for next time. Keying by externalKey lets one app manage many tournaments without
+    // their saved IDs colliding. A blank externalKey fails fast with TK_INVALID_ARGUMENT.
+    fun getOrCreateTournament(externalKey: String, templateId: String, name: String, callback: TKCallback<Tournament>) {
+        val u = requireReady(callback) ?: return
+        if (externalKey.isBlank()) {
+            deliverError(callback, TKError(TKErrorCode.TK_INVALID_ARGUMENT, "externalKey must not be blank"))
+            return
+        }
+        val storageKey = PREFS_KEY_PREFIX + externalKey
+        val savedId = prefs?.getString(storageKey, null)
+
+        if (savedId != null) {
+            getTournament(savedId, callback)
+        } else {
+            createTournament(templateId, name, object : TKCallback<Tournament> {
+                override fun onSuccess(result: Tournament) {
+                    prefs?.edit()?.putString(storageKey, result.id)?.apply()
+                    callback.onSuccess(result)
+                }
+                override fun onError(error: TKError) {
+                    callback.onError(error)
+                }
+            })
+        }
+    }
+
+    // Clears the saved tournament ID for ONE externalKey, so its next getOrCreateTournament() call
+    // creates a fresh tournament. Other keys' saved IDs are left untouched.
+    fun clearSession(externalKey: String) {
+        prefs?.edit()?.remove(PREFS_KEY_PREFIX + externalKey)?.apply()
+    }
+
+    // Clears EVERY saved tournament ID (all externalKeys), so every slot starts fresh next time.
+    fun clearAllSessions() {
+        val editor = prefs?.edit() ?: return
+        prefs?.all?.keys?.filter { it.startsWith(PREFS_KEY_PREFIX) }?.forEach { editor.remove(it) }
+        editor.apply()
     }
 
     // Joins a tournament by code; returns the caller's Participant entry (spec §3 shape).

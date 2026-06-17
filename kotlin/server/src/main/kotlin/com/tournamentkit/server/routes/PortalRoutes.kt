@@ -103,6 +103,13 @@ fun Route.portalRoutes(
             call.respond(io { portal.tournamentView(pid, tid) })
         }
 
+        delete("/tournaments/{tid}") {
+            val pid = call.ownedProject(projects)
+            val tid = call.parameters["tid"]!!
+            io { portal.deleteTournament(pid, tid, call.portalUid) }
+            call.respond(io.ktor.http.HttpStatusCode.NoContent)
+        }
+
         post("/tournaments/{tid}/freeze") {
             val pid = call.ownedProject(projects)
             val tid = call.parameters["tid"]!!

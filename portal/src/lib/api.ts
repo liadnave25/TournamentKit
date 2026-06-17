@@ -147,6 +147,10 @@ export const api = {
   getAudit: (pid: string, tid: string) =>
     request<AuditEntry[]>("GET", `/portal/projects/${seg(pid)}/tournaments/${seg(tid)}/audit`),
 
+  // Hard-delete a tournament and all its data (admin-only). Returns 204 (no body) on success.
+  deleteTournament: (pid: string, tid: string) =>
+    request<void>("DELETE", `/portal/projects/${seg(pid)}/tournaments/${seg(tid)}`),
+
   // ---- keys ----
 
   // Rotate the project's API key; the new key is returned ONCE.

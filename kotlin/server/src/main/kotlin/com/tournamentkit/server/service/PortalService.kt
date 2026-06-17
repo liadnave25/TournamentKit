@@ -119,6 +119,21 @@ class PortalService(
         return active
     }
 
+    // Hard-deletes a tournament and all of its owned data (participants, standings, matches, and its own
+    // auditLog). Admin-only; the route layer has already verified the caller owns this project.
+    // The DELETE_TOURNAMENT audit entry is written to the PROJECT audit log BEFORE the delete, because the
+    // tournament's own auditLog is destroyed with it — logging at the project level keeps the record.
+    fun deleteTournament(projectId: String, tournamentId: String, adminUid: String) {
+        ownedTournament(projectId, tournamentId)   // 404 if missing or not in this project
+        audit.appendProject(projectId, mapOf(
+            "action" to "DELETE_TOURNAMENT",
+            "tournamentId" to tournamentId,
+            "adminUid" to adminUid,
+            "timestamp" to System.currentTimeMillis()
+        ))
+        tournaments.delete(tournamentId)
+    }
+
     // Admin-overrides a match result; ReportService runs the transaction and writes the audit entry.
     fun overrideResult(projectId: String, tournamentId: String, matchId: String, adminUid: String, score: TKScore, reason: String) {
         ownedTournament(projectId, tournamentId)   // ensure it exists in this project

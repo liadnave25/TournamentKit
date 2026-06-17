@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.firebase.admin)
 
     testImplementation(libs.junit)
+    testImplementation(libs.ktor.server.testhost)
 }
 
 // Use the JUnit 4 runner for :server tests.
