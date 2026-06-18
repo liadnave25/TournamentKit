@@ -1,6 +1,4 @@
-// Full visual tournament detail + admin actions. Renders a bracket (knockout / groups→knockout) and/or
-// standings (league / groups), the participants, freeze/unfreeze, per-match result override, and the
-// audit log. All data comes from GET /tournaments/{tid}; actions refresh it.
+// Full visual tournament detail plus admin actions (bracket/standings, participants, freeze, override, audit) over GET /tournaments/{tid}.
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";

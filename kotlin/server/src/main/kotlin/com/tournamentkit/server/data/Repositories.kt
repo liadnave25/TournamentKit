@@ -161,10 +161,7 @@ open class TournamentRepository(private val db: Firestore) {
         return q.documents.map { tournamentFromMap(it.data!!) }
     }
 
-    // Hard-deletes a tournament and everything it owns. Participants are a field on the tournament
-    // doc (so they vanish with it); matches, standings, and the auditLog are sub-collections, so each
-    // of their docs is deleted explicitly. All deletes (sub-collection docs + the tournament doc)
-    // go in ONE batched write so no orphan sub-doc can survive a deleted parent.
+    // Hard-deletes a tournament and its sub-collection docs (matches, standings, auditLog) in one batched write so no orphan survives.
     open fun delete(tournamentId: String) {
         val batch = db.batch()
         for (sub in listOf(Paths.matches(tournamentId), Paths.standings(tournamentId), Paths.auditLog(tournamentId))) {

@@ -1,5 +1,4 @@
-// Create-a-project screen. Shown automatically when the developer has no projects yet, and reachable
-// to add more. On success it reveals the first API key ONCE, then refreshes the project list.
+// Create-a-project screen that reveals the first API key once on success, then refreshes the project list.
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, ApiError } from "../lib/api";

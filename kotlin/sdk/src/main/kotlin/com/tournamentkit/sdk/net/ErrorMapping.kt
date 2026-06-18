@@ -9,8 +9,7 @@ import java.io.IOException
 // Lenient parser for the server's JSON error bodies (ignores any extra fields).
 private val errorJson = Json { ignoreUnknownKeys = true }
 
-// Turns a failed HTTP response into a typed TKError. Prefers the server's own TKError body;
-// falls back to a status-code mapping when the body is missing or unparseable.
+// Turns a failed HTTP response into a typed TKError, preferring the server's body and falling back to a status-code mapping.
 internal fun errorFromResponse(response: Response<*>): TKError {
     val raw = response.errorBody()?.string()
 

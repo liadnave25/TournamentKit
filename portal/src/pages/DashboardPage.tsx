@@ -1,5 +1,4 @@
-// The dashboard: headline analytics for the selected project. Handles loading, error (TKError message),
-// and a brand-new project (all zeros) gracefully.
+// The dashboard: headline analytics for the selected project, handling loading, TKError, and a brand-new project.
 import { api } from "../lib/api";
 import { useProjects } from "../lib/project";
 import { usePid } from "../lib/usePid";

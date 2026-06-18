@@ -6,8 +6,7 @@ import com.tournamentkit.shared.TKScore
 import com.tournamentkit.shared.Tournament
 import kotlinx.serialization.Serializable
 
-// Wire DTOs for the /v1 endpoints. These stay INTERNAL to the SDK — the public API only ever
-// exposes :shared models (Tournament, Match, Standing, Participant). Bodies mirror the server's DTOs.
+// Internal wire DTOs for the /v1 endpoints, mirroring the server's bodies (the public API exposes only :shared models).
 
 // ---------- request bodies ----------
 
@@ -47,7 +46,7 @@ internal data class TallyAddBody(
 
 // ---------- response bodies ----------
 
-// Server's full tournament view (tournament + matches + standings). The SDK unwraps the part each call needs.
+// The server's full tournament view (tournament + matches + standings), which the SDK unwraps per call.
 @Serializable
 internal data class TournamentViewDto(
     val tournament: Tournament,

@@ -3,7 +3,7 @@ package com.tournamentkit.server.engine
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-// Computes cumulative player ratings with the standard ELO formula. Pure math, no I/O.
+// Computes cumulative player ratings with the standard ELO formula (pure math, no I/O).
 object EloCalculator {
     // Every player starts here until they have played a rated game.
     const val DEFAULT_RATING: Int = 1200

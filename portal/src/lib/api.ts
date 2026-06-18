@@ -1,5 +1,4 @@
-// Typed fetch client for the /portal API. Attaches the Firebase ID token as a Bearer header on every
-// request and turns server TKError JSON bodies into a typed ApiError. One place for all API calls.
+// One typed fetch client for the /portal API that attaches the Firebase ID token and turns TKError bodies into a typed ApiError.
 import { currentIdToken } from "./auth";
 import type {
   Analytics,
@@ -79,7 +78,7 @@ function safeJson(text: string): unknown {
 // Encodes a path segment so ids with odd characters are URL-safe.
 const seg = (s: string) => encodeURIComponent(s);
 
-// The portal API surface. One typed method per /portal endpoint (see docs/portal-api.md).
+// The portal API surface: one typed method per /portal endpoint (see docs/portal-api.md).
 export const api = {
   // ---- projects ----
 

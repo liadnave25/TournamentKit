@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-// Registers the dev-only seeding route. Returns 404 unless DEV_MODE=true.
+// Registers the dev-only seeding route, returning 404 unless DEV_MODE=true.
 fun Route.devRoutes(seed: DevSeedService) {
     post("/dev/seed") {
         // Hidden in production: behaves as if the route does not exist.

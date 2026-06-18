@@ -1,5 +1,4 @@
-// Login + Sign-up on one screen (toggle between modes). Email/Password via Firebase.
-// On success the auth state changes and the router sends the developer into the app.
+// Login + Sign-up on one toggleable screen via Firebase Email/Password, after which the router sends the developer into the app.
 import { useState, type FormEvent } from "react";
 import { FirebaseError } from "firebase/app";
 import { useAuth } from "../lib/auth";

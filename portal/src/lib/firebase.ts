@@ -1,5 +1,4 @@
-// Firebase setup for Auth ONLY (Email/Password). The portal never talks to Firestore directly —
-// all data goes through the /portal HTTP API. Config comes from VITE_ env vars (public web config).
+// Firebase setup for Auth only (Email/Password), configured from VITE_ env vars; all data goes through the /portal HTTP API.
 import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 

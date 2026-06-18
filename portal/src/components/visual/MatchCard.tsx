@@ -5,7 +5,7 @@ import type { Match } from "../../lib/types";
 
 const TBD_ID = ""; // mirrors the engine's TBD slot id
 
-// Renders one match. The card is sized by the caller (BracketView) or flows naturally (lists).
+// Renders one match, sized by the caller (BracketView) or flowing naturally in lists.
 export function MatchCard({
   match,
   nameOf,

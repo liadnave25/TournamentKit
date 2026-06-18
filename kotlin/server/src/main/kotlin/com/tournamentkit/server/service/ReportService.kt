@@ -23,19 +23,15 @@ import com.tournamentkit.shared.TKScore
 import com.tournamentkit.shared.TournamentStatus
 import com.tournamentkit.server.engine.Outcome as EngineOutcome
 
-// Handles reporting and admin-overriding results — the only place that mutates match/standing/
-// rating state. Single-writer model: a reported result is final (CONFIRMED) immediately; there is
-// no player-confirmation step. Every path runs through one Firestore transaction.
+// The only place that mutates match/standing/rating state, reporting and admin-overriding results (each CONFIRMED immediately in one transaction).
 class ReportService(private val db: Firestore) {
 
-    // Reports a score and immediately finalizes it: validate → progression (winner/standings/ELO) →
-    // write the match CONFIRMED, all in one transaction. There is no intermediate REPORTED state.
+    // Reports a score and finalizes it (validate → progression → write CONFIRMED) in one transaction.
     fun report(projectId: String, tournamentId: String, matchId: String, userId: String, score: TKScore) {
         runResultTransaction(projectId, tournamentId, matchId, userId, score)
     }
 
-    // Admin override (portal): apply a result regardless of who reports it, with an audit reason.
-    // Reuses the same progression transaction; bypasses the player-identity and FROZEN checks.
+    // Admin override (portal): applies a result with an audit reason, bypassing the player-identity and FROZEN checks.
     fun override(projectId: String, tournamentId: String, matchId: String, adminUid: String, score: TKScore, reason: String) {
         require(reason.isNotBlank()) { "override reason is required" }
         runResultTransaction(
@@ -45,8 +41,7 @@ class ReportService(private val db: Firestore) {
         )
     }
 
-    // The single atomic operation behind report/override. EVERYTHING below happens in ONE transaction.
-    // Firestore rule: ALL reads must come before ANY writes — the code is split into a read phase then a write phase.
+    // The single atomic transaction behind report/override, split into a read phase then a write phase (Firestore requires reads before writes).
     private fun runResultTransaction(
         projectId: String,
         tournamentId: String,

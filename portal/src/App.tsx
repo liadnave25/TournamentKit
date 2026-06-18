@@ -1,6 +1,4 @@
-// The app shell: routing + auth guard. Unauthenticated → AuthPage. Authenticated but no project →
-// create-first-project. Otherwise pid-scoped routes so deep links like
-// /projects/{pid}/tournaments/{tid} load directly.
+// The app shell: an auth guard routing to AuthPage, create-first-project, or pid-scoped routes for deep links.
 import { useEffect } from "react";
 import { Navigate, Outlet, Route, Routes, useParams } from "react-router-dom";
 import { useAuth } from "./lib/auth";
@@ -34,7 +32,7 @@ export function App() {
   );
 }
 
-// The signed-in experience: resolve project state, then route. Routes are pid-scoped for deep links.
+// The signed-in experience: resolves project state then routes (pid-scoped for deep links).
 function SignedInApp() {
   const { projects, selected, loading, error, reload } = useProjects();
 
@@ -84,8 +82,7 @@ function SignedInApp() {
   );
 }
 
-// Renders the left nav + the routed page for a project, and keeps the URL pid in sync with the
-// ProjectProvider selection (so deep links and the switcher agree). Guards unknown/unowned pids.
+// Renders the nav + routed page for a project, keeping the URL pid in sync with the selection and guarding unknown/unowned pids.
 function ProjectLayout() {
   const { pid } = useParams<{ pid: string }>();
   const { projects, selected, select } = useProjects();

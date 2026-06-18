@@ -1,5 +1,4 @@
-// A league standings table — rank from position (pass the already-sorted list from the server),
-// columns #, TEAM, P, W, D, L, GD, Pts, with the leader emphasized. React port of the Compose view.
+// A league standings table (#, TEAM, P, W, D, L, GD, Pts) over the already-sorted list, a React port of the Compose view.
 import type { Standing } from "../../lib/types";
 import { Empty } from "../StateBlock";
 

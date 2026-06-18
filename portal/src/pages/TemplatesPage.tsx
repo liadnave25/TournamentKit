@@ -1,6 +1,4 @@
-// Templates CRUD. Lists templates, opens a create/edit form with client-side validation mirroring
-// the server, and deletes with a confirm dialog. Server TKError messages (e.g. 409 on a referenced
-// template) are surfaced verbatim. Editing never affects running tournaments (rules are snapshotted).
+// Templates CRUD with a create/edit form mirroring the server's validation and surfacing its TKError messages verbatim.
 import { useState, type FormEvent } from "react";
 import { api, ApiError, type TemplateInput } from "../lib/api";
 import { usePid } from "../lib/usePid";
@@ -71,7 +69,9 @@ function TemplateRow({ t, onEdit, onDelete }: { t: Template; onEdit: () => void;
           <span className="tk-num" style={{ color: "var(--tk-muted)", fontSize: 12 }}>{t.id}</span>
         </div>
         <div style={{ color: "var(--tk-muted)", fontSize: 13, marginTop: 4 }}>
-          Win {t.scoring.win} · Draw {t.scoring.draw} · Loss {t.scoring.loss} · Max {t.maxParticipants}
+          {t.type === "TALLY"
+            ? "Points leaderboard (PTS)"
+            : `Win ${t.scoring.win} · Draw ${t.scoring.draw} · Loss ${t.scoring.loss} · Max ${t.maxParticipants}`}
         </div>
       </div>
       <button className="tk-btn tk-btn-ghost" onClick={onEdit}>Edit</button>
@@ -144,22 +144,26 @@ function TemplateForm({
           </select>
         </Field>
 
-        {isTally && (
+        {isTally ? (
+          // TALLY is an open-ended points leaderboard: only PTS matters, so scoring and max are hidden
+          // (the server still requires valid values, which onTypeChange has set to no-op defaults).
           <div style={{ color: "var(--tk-muted)", fontSize: 13, marginTop: -4, marginBottom: 12 }}>
-            TALLY is an open-ended points leaderboard — scoring and max participants are not used by it
-            (players accumulate points via the SDK). The values below are kept only to satisfy the form.
+            TALLY is an open-ended points leaderboard — players accumulate points (PTS) via the SDK.
+            It has no win/draw/loss scoring and no participant cap.
           </div>
+        ) : (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              <NumberField label="Win" value={win} onChange={setWin} error={fieldErrors.win} />
+              <NumberField label="Draw" value={draw} onChange={setDraw} error={fieldErrors.draw} />
+              <NumberField label="Loss" value={loss} onChange={setLoss} error={fieldErrors.loss} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
+              <NumberField label="Max participants" value={maxParticipants} onChange={setMax} error={fieldErrors.maxParticipants} />
+            </div>
+          </>
         )}
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          <NumberField label="Win" value={win} onChange={setWin} error={fieldErrors.win} />
-          <NumberField label="Draw" value={draw} onChange={setDraw} error={fieldErrors.draw} />
-          <NumberField label="Loss" value={loss} onChange={setLoss} error={fieldErrors.loss} />
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
-          <NumberField label="Max participants" value={maxParticipants} onChange={setMax} error={fieldErrors.maxParticipants} />
-        </div>
 
         {serverError && (
           <div role="alert" style={{ color: "var(--tk-danger)", fontSize: 14, marginBottom: 12 }}>{serverError}</div>

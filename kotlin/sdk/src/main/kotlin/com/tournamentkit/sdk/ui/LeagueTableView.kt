@@ -21,9 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tournamentkit.shared.Standing
 
-// A league standings table. Rank comes from position — pass the list already engine-sorted
-// (as returned by getStandings). Columns: #, name, P, W, D, L, GD, Pts. The leader is emphasized.
-// Pass nameOf to resolve a userId to a display name. Presentation only — never calls the SDK.
+// A league standings table (#, name, P, W, D, L, GD, Pts) over an already engine-sorted list; presentation only.
 @Composable
 fun LeagueTableView(
     standings: List<Standing>,

@@ -1,5 +1,4 @@
-// A simple modal dialog: a dimmed backdrop + a centered Floodlight card. Closes on backdrop click
-// or Escape. Used for delete confirmation and the result-override form.
+// A simple modal dialog (dimmed backdrop + centered Floodlight card) that closes on backdrop click or Escape.
 import { useEffect, type ReactNode } from "react";
 
 export function Dialog({

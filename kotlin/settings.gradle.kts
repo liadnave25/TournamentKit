@@ -1,4 +1,4 @@
-// Root Gradle settings: names the build and registers the four modules.
+// Root Gradle settings: names the build and registers the modules.
 pluginManagement {
     repositories {
         google()
@@ -23,7 +23,7 @@ val serverOnly = settings.providers.gradleProperty("serverOnly").isPresent
 val sdkOnly = settings.providers.gradleProperty("sdkOnly").isPresent
 
 // -PsdkOnly: publish/build only the Android library (e.g. on JitPack) — include :shared + :sdk, skip
-//   :server (heavy server deps) and :demo-app (an Android app needing extra setup).
+//   :server (heavy server deps).
 // -PserverOnly: the Docker image build — include :server, skip the Android modules (no Android SDK).
 // Default (no flag): the full build with every module.
 if (!sdkOnly) {
@@ -31,7 +31,4 @@ if (!sdkOnly) {
 }
 if (!serverOnly) {
     include(":sdk")
-    if (!sdkOnly) {
-        include(":demo-app")
-    }
 }

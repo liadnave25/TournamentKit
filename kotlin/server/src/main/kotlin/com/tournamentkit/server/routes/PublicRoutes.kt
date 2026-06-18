@@ -21,7 +21,7 @@ import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// Registers all authenticated /v1 endpoints. The auth plugin runs first for every route here.
+// Registers all authenticated /v1 endpoints, with the auth plugin running first for every route.
 fun Route.publicRoutes(
     projects: ProjectRepository,
     ratings: RatingRepository,

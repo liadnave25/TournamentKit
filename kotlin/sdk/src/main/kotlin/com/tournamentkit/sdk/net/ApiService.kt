@@ -8,8 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
-// Retrofit mapping of the public /v1 endpoints. Every call is suspend and returns a raw Response<T>
-// so the error layer can read the status code and parse a TKError body uniformly.
+// Retrofit mapping of the public /v1 endpoints; each call returns a raw Response<T> so the error layer can read status + body.
 internal interface ApiService {
 
     // Create a tournament from a template (creator auto-joins).

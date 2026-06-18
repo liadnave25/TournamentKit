@@ -1,5 +1,4 @@
-// Admin result-override dialog: requires a home/away score AND a non-empty reason. On success it
-// hands back the updated view; the server's 409 (e.g. downstream already played) is shown, not hidden.
+// Admin result-override dialog requiring a score and a non-empty reason, surfacing the server's 409 rather than hiding it.
 import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../lib/api";
 import { Dialog } from "./Dialog";

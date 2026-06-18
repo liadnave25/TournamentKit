@@ -1,5 +1,4 @@
-// Confirm dialog for hard-deleting a tournament. Simple confirm/cancel (no type-to-confirm). On confirm
-// it calls DELETE; the server's TKError is surfaced inline — success is never faked.
+// Confirm/cancel dialog for hard-deleting a tournament, calling DELETE and surfacing the server's TKError inline.
 import { useState } from "react";
 import { api, ApiError } from "../lib/api";
 import { Dialog } from "./Dialog";

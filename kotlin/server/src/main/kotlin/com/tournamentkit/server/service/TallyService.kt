@@ -12,12 +12,10 @@ import com.tournamentkit.shared.TemplateType
 import com.tournamentkit.shared.TKErrorCode
 import com.tournamentkit.shared.TournamentStatus
 
-// Handles the one TALLY mutation: add points to a person on an open-ended leaderboard.
-// Runs in a single Firestore transaction (read tournament + standing, then write participant + standing).
+// Handles the one TALLY mutation — adding points to a leaderboard — in a single Firestore transaction.
 class TallyService(private val db: Firestore) {
 
-    // Adds `points` (may be negative) to a user on a TALLY tournament, auto-creating the
-    // participant + standing on their first add. Returns the user's updated Standing.
+    // Adds `points` (may be negative) to a user, auto-creating their participant + standing on first add.
     fun add(tournamentId: String, userId: String, displayName: String, points: Int): Standing = unwrapping {
         db.runTransaction<Standing> { tx ->
             // ---------- READ PHASE (all reads before any writes) ----------

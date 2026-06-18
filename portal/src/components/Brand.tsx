@@ -1,4 +1,4 @@
-// The TournamentKit wordmark + a small "floodlight" glyph. Used in the top bar and on auth screens.
+// The TournamentKit wordmark + floodlight glyph, used in the top bar and on auth screens.
 export function Brand({ size = 20 }: { size?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -1,5 +1,4 @@
-// The persistent top bar: brand, project switcher (when the developer owns multiple), and the
-// signed-in email with sign-out. Switching project navigates to that project's dashboard.
+// The persistent top bar with brand, project switcher, and signed-in email; switching project navigates to its dashboard.
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useProjects } from "../lib/project";

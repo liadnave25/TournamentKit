@@ -28,9 +28,7 @@ private const val TBD_ID = ""
 // Which side, if any, won — drives the winner emphasis when a match is CONFIRMED.
 private enum class Side { HOME, AWAY, NONE }
 
-// A single match: two participants, the score if present, and a clear status.
-// Pass nameOf to resolve a userId to a display name (from the tournament's participants).
-// Presentation only — this never calls the SDK. Handles BYE (awayId == null) and TBD ("" id) slots.
+// A single match card (two participants, score, status), handling BYE and TBD slots; presentation only.
 @Composable
 fun MatchCard(
     match: Match,

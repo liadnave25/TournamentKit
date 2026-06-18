@@ -1,4 +1,4 @@
-// Analytics: the headline numbers plus a small by-status bar breakdown. Light, mono numerals.
+// Analytics: the headline numbers plus a small by-status bar breakdown.
 import { api } from "../lib/api";
 import { usePid } from "../lib/usePid";
 import { useAsync } from "../lib/useAsync";

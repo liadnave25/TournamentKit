@@ -1,5 +1,4 @@
-// API key management. Only a hash is stored server-side, so there's nothing to list — the only action
-// is rotate, which returns a brand-new key shown ONCE (reusing ApiKeyReveal) and invalidates the old one.
+// API key management whose only action is rotate, returning a new key shown once and invalidating the old one (only a hash is stored).
 import { useState } from "react";
 import { api, ApiError } from "../lib/api";
 import { usePid } from "../lib/usePid";

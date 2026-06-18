@@ -21,7 +21,7 @@ export interface BracketLayout {
   height: number;
 }
 
-// Card + gap sizing (px). Exported so the BracketView draws cards/connectors with the same numbers.
+// Card + gap sizing (px), exported so BracketView draws cards/connectors with the same numbers.
 export interface BracketMetrics {
   cardWidth: number;
   cardHeight: number;

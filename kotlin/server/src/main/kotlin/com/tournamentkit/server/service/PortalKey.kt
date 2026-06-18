@@ -3,7 +3,7 @@ package com.tournamentkit.server.service
 import java.security.SecureRandom
 import java.util.Base64
 
-// Generates API keys for projects. Keys are random and never stored in plaintext (only their hash).
+// Generates random API keys for projects, never stored in plaintext (only their hash).
 object PortalKey {
     private val secureRandom = SecureRandom()
 

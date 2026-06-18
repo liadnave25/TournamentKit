@@ -2,8 +2,7 @@ package com.tournamentkit.server.service
 
 import com.tournamentkit.shared.Template
 
-// Validates a template's fields. Throws IllegalArgumentException (mapped to 400) on any bad value.
-// Pure function so the rules are unit-testable without a server.
+// Pure validation of a template's fields, throwing IllegalArgumentException (mapped to 400) on any bad value.
 fun validateTemplate(t: Template) {
     // Scoring values must be non-negative (the enum already guarantees a valid type).
     require(t.scoring.win >= 0) { "scoring.win must be >= 0" }

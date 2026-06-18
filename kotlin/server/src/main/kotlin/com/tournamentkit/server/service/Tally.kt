@@ -5,10 +5,7 @@ import com.tournamentkit.shared.Standing
 
 // Pure functions behind the TALLY leaderboard (no I/O) so they can be unit-tested in isolation.
 
-// Returns the standing row after adding `points` to a user's running total. A null `existing`
-// means the user is new, so we start from zero. Points may be negative and the total may go
-// below zero — TALLY is a ledger/correction, not a non-negative counter. Only userId+points
-// are meaningful for TALLY; the match-derived fields stay 0.
+// Returns the standing row after adding `points` (possibly negative) to a user's total, starting from zero when new.
 fun mergeTallyPoints(userId: String, existing: Standing?, points: Int): Standing {
     val current = existing?.points ?: 0
     return Standing(

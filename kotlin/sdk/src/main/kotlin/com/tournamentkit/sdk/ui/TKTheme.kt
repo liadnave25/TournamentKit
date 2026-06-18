@@ -10,10 +10,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
-// The TournamentKit design tokens. The components read ONLY from these — no hardcoded colors anywhere —
-// so a developer restyles everything by passing a different TKColors/TKTypography to TKTheme.
+// The TournamentKit design tokens; components read only from these, so a developer restyles everything via TKTheme.
 
-// A small, meaningful palette. "Floodlight": a stadium-at-night base with hot trophy-gold accents.
+// The "Floodlight" palette: a stadium-at-night base with hot trophy-gold accents.
 data class TKColors(
     val surface: Color,          // page background
     val surfaceElevated: Color,  // cards, table rows
@@ -54,7 +53,7 @@ data class TKColors(
     }
 }
 
-// The type scale. Display roles use tight tracking + heavy weight for a scoreboard feel; body is clean.
+// The type scale; display roles use tight tracking and heavy weight for a scoreboard feel.
 data class TKTypography(
     val display: TextStyle,   // big numbers / titles
     val title: TextStyle,     // participant names, card headers
@@ -63,8 +62,7 @@ data class TKTypography(
     val mono: TextStyle       // scores (tabular feel)
 ) {
     companion object {
-        // Default scale. We lean on weight/tracking/case (not a bundled font) so it looks intentional
-        // without shipping font files; a developer can swap in a real display FontFamily via copy().
+        // Default scale leaning on weight/tracking/case (no bundled font); swap a real FontFamily in via copy().
         val Default = TKTypography(
             display = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Black, fontSize = 28.sp, letterSpacing = (-0.5).sp),
             title = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, letterSpacing = 0.sp),
@@ -87,8 +85,7 @@ object TK {
         @Composable get() = LocalTKTypography.current
 }
 
-// Wraps content with TournamentKit tokens. Override by passing your own colors/typography:
-//   TKTheme(colors = TKColors.Default.copy(primary = brandColor)) { BracketView(...) }
+// Wraps content with TournamentKit tokens, overridable by passing your own colors/typography.
 @Composable
 fun TKTheme(
     colors: TKColors = TKColors.Default,

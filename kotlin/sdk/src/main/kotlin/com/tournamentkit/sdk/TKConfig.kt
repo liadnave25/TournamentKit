@@ -1,7 +1,6 @@
 package com.tournamentkit.sdk
 
-// The live production server. The developer can override the base URL in init() to point at a
-// local server, but the common case needs no config — this default just works.
+// The live production server, overridable via init() but needing no config in the common case.
 const val DEFAULT_BASE_URL = "https://tournamentkit-server-520238889661.europe-west1.run.app"
 
 // Immutable config captured at init() time: which server to talk to and how to authenticate.

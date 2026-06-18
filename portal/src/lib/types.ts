@@ -34,7 +34,7 @@ export interface CreateProjectResponse {
   apiKey: string;
 }
 
-// Tournament template (GET/POST /templates). TALLY is an open-ended points leaderboard with no matches.
+// Tournament template (GET/POST /templates), where TALLY is an open-ended points leaderboard with no matches.
 export type TemplateType = "KNOCKOUT" | "LEAGUE" | "GROUPS_KNOCKOUT" | "TALLY";
 export interface Template {
   id: string;
@@ -67,7 +67,7 @@ export interface TKScore {
   away: number;
 }
 
-// Where a match stands. Single-writer model: a reported result is final immediately — no REPORTED step.
+// Where a match stands; under the single-writer model a reported result is final immediately (no REPORTED step).
 export type MatchStatus = "PENDING" | "CONFIRMED";
 
 // One game: two sides, an optional score, and a pointer to where the winner advances.
@@ -116,8 +116,7 @@ export interface TournamentView {
   standings: Standing[];
 }
 
-// One audit-log entry (GET /tournaments/{id}/audit). Heterogeneous: only `action`/`adminUid`/
-// `timestamp` are always present; override entries also carry matchId/reason/oldScore/newScore.
+// One audit-log entry (GET /tournaments/{id}/audit) where only action/adminUid/timestamp are always present.
 export interface AuditEntry {
   action: string;
   adminUid?: string;

@@ -24,9 +24,7 @@ data class BracketMetrics(
     val vGap: Float    // vertical gap between round-1 cards
 )
 
-// Computes the left→right bracket layout from the engine's match list.
-// Round → x (columns); round-1 slot → y (rows); each later match is vertically CENTERED between the
-// two earlier matches that feed it (its children via nextMatchId). Pure function — no Compose types.
+// Pure layout math mapping the match list to x-by-round, y-by-slot, with each later match centered between its two feeders.
 fun computeBracketLayout(matches: List<Match>, metrics: BracketMetrics): BracketLayout {
     if (matches.isEmpty()) return BracketLayout(emptyMap(), emptyList(), 0f, 0f)
 

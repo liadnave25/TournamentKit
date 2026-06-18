@@ -23,8 +23,7 @@ fun decideRate(state: WindowState?, now: Long, limit: Int, windowMillis: Long): 
     return RateDecision(allowed = true, next = state.copy(count = state.count + 1))
 }
 
-// In-memory fixed-window rate limiter keyed by API key (or client IP). Single-instance only;
-// a distributed limiter (e.g. Redis) would be the production upgrade for multi-instance Cloud Run.
+// In-memory, single-instance fixed-window rate limiter keyed by API key (or client IP).
 class RateLimiter(private val limit: Int, private val windowMillis: Long = 60_000L) {
     private val windows = ConcurrentHashMap<String, WindowState>()
 

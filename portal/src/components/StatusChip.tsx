@@ -1,4 +1,4 @@
-// A tournament-status pill using the Floodlight state colors. Reused by lists and the detail header.
+// A tournament-status pill in Floodlight state colors, reused by lists and the detail header.
 import type { TournamentStatus } from "../lib/types";
 
 const COLORS: Record<TournamentStatus, string> = {

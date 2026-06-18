@@ -25,19 +25,17 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
-// The single public entry point an app developer uses. Callback-style API (spec §3) backed by
-// coroutines: network runs on Dispatchers.IO, results are delivered on the main thread.
+// The single public entry point: a callback-style API (spec §3) that runs network on Dispatchers.IO and delivers results on the main thread.
 object TournamentKit {
 
     // Set once by initialize(); null until then so calls can fail fast with TK_NOT_INITIALIZED.
     private var config: TKConfig? = null
     private var api: ApiService? = null
 
-    // Internal storage for per-tournament saved IDs (spec §5 persistence). Each tournament slot is
-    // keyed by a developer-chosen externalKey so multiple tournaments never share one saved ID.
+    // Per-tournament saved IDs (spec §5), keyed by a developer-chosen externalKey so tournaments never share a saved ID.
     private var prefs: android.content.SharedPreferences? = null
 
-    // Prefix for every saved-tournament-id entry. The full key is PREFS_KEY_PREFIX + externalKey.
+    // Prefix for every saved-tournament-id entry; the full key is PREFS_KEY_PREFIX + externalKey.
     private const val PREFS_KEY_PREFIX = "tk_tournament_id_"
 
     // The current user from identify(); needed by calls that act on behalf of a player.
@@ -46,14 +44,12 @@ object TournamentKit {
     // All network work runs here; SupervisorJob keeps one failed call from cancelling the others.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    // Posts callback results to the Android main thread so developers can touch UI directly.
-    // Injectable so unit tests can run callbacks inline (no Android looper on the JVM).
+    // Posts callback results to the main thread; injectable so unit tests can run them inline.
     internal var resultDispatcher: (Runnable) -> Unit = { r -> Handler(Looper.getMainLooper()).post(r) }
 
     // ---------- lifecycle ----------
 
-    // Stores config and builds the network client. No network call. Idempotent (re-init replaces config).
-    // We keep the APPLICATION context only — never an Activity — to avoid leaking a screen.
+    // Stores config and builds the network client (idempotent, no network); keeps only the application context to avoid leaks.
     fun init(
         context: Context,
         apiKey: String,
@@ -69,7 +65,7 @@ object TournamentKit {
         api = RetrofitProvider.create(cfg.baseUrl, cfg.apiKey, cfg.projectId, cfg.debugLogging)
     }
 
-    // Records who the current user is for subsequent calls. No network.
+    // Records who the current user is for subsequent calls (no network).
     fun identify(userId: String, displayName: String) {
         user = TKUser(userId, displayName)
     }
@@ -80,8 +76,7 @@ object TournamentKit {
         api = RetrofitProvider.create(baseUrl, apiKey, projectId, debugLogging = false)
     }
 
-    // Test seam: clears all state (including all saved tournament IDs via the prefs reference) so
-    // each test starts from a clean, uninitialized SDK.
+    // Test seam: clears all state so each test starts from a clean, uninitialized SDK.
     internal fun resetForTest() {
         config = null
         api = null
@@ -103,11 +98,7 @@ object TournamentKit {
         call(callback) { it.createTournament(CreateTournamentBody(templateId, name, u.userId, u.displayName)) }
     }
 
-    // High-level "Plug-and-Play" entry point for one tournament slot, identified by [externalKey]
-    // (a stable, developer-chosen id such as "weekly_tokens" or "football_league"). If this key has
-    // a saved tournament ID, fetches it; otherwise creates a new tournament and persists its ID under
-    // this key for next time. Keying by externalKey lets one app manage many tournaments without
-    // their saved IDs colliding. A blank externalKey fails fast with TK_INVALID_ARGUMENT.
+    // Plug-and-play slot keyed by [externalKey]: fetches the saved tournament if present, else creates one and persists its ID.
     fun getOrCreateTournament(externalKey: String, templateId: String, name: String, callback: TKCallback<Tournament>) {
         val u = requireReady(callback) ?: return
         if (externalKey.isBlank()) {
@@ -132,8 +123,7 @@ object TournamentKit {
         }
     }
 
-    // Clears the saved tournament ID for ONE externalKey, so its next getOrCreateTournament() call
-    // creates a fresh tournament. Other keys' saved IDs are left untouched.
+    // Clears the saved tournament ID for one externalKey so its next getOrCreateTournament() starts fresh.
     fun clearSession(externalKey: String) {
         prefs?.edit()?.remove(PREFS_KEY_PREFIX + externalKey)?.apply()
     }
@@ -161,8 +151,7 @@ object TournamentKit {
         call(callback) { it.startTournament(tournamentId, StartBody(u.userId)) }
     }
 
-    // Reports a match result; it is final immediately (CONFIRMED). Returns the reported Match
-    // from the updated tournament view. Single-writer model: there is no confirmation step.
+    // Reports a match result, final immediately (CONFIRMED, single-writer); returns the reported Match.
     fun reportResult(tournamentId: String, matchId: String, score: TKScore, callback: TKCallback<Match>) {
         val u = requireReady(callback) ?: return
         callMapped(callback, { it.reportResult(ReportBody(tournamentId, matchId, u.userId, score)) }) { view ->

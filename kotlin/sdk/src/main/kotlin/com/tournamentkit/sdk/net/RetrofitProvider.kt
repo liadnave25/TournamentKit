@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 
-// Builds the configured ApiService for a given base URL + credentials. One place for all wiring.
+// One place that builds the configured ApiService for a given base URL and credentials.
 internal object RetrofitProvider {
 
     // Tolerant JSON: ignore fields the SDK doesn't model so server additions never break clients.

@@ -5,8 +5,7 @@ import com.tournamentkit.shared.MatchStatus
 import com.tournamentkit.shared.Standing
 import com.tournamentkit.shared.TKScore
 
-// Realistic sample data shared by @Preview composables and the layout unit tests, so what you see in
-// Android Studio is exactly what the math is tested against. Mirrors the engine's id/round/slot scheme.
+// Realistic sample data (mirroring the engine's id/round/slot scheme) shared by @Preview composables and the layout unit tests.
 object SampleData {
 
     // A pool of display names; previews resolve "p1".."pN" against this.

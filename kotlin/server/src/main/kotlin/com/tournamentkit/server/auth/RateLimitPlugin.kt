@@ -6,8 +6,7 @@ import com.tournamentkit.shared.TKErrorCode
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.plugins.origin
 
-// Ktor plugin that rate-limits a route group per API key (falling back to client IP when there is no
-// key). On exceed it throws TK_RATE_LIMITED, which the central handler maps to HTTP 429.
+// Ktor plugin that rate-limits a route group per API key (or client IP), throwing TK_RATE_LIMITED (HTTP 429) on exceed.
 fun rateLimitPlugin(limiter: RateLimiter) = createRouteScopedPlugin("RateLimit") {
     onCall { call ->
         // Prefer the API key so a single key can't be bypassed by changing IP; else key by IP.

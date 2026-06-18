@@ -119,10 +119,7 @@ class PortalService(
         return active
     }
 
-    // Hard-deletes a tournament and all of its owned data (participants, standings, matches, and its own
-    // auditLog). Admin-only; the route layer has already verified the caller owns this project.
-    // The DELETE_TOURNAMENT audit entry is written to the PROJECT audit log BEFORE the delete, because the
-    // tournament's own auditLog is destroyed with it — logging at the project level keeps the record.
+    // Hard-deletes a tournament and all its data, logging DELETE_TOURNAMENT to the project audit log first (the tournament's own log is destroyed with it).
     fun deleteTournament(projectId: String, tournamentId: String, adminUid: String) {
         ownedTournament(projectId, tournamentId)   // 404 if missing or not in this project
         audit.appendProject(projectId, mapOf(

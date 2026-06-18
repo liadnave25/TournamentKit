@@ -2,8 +2,7 @@ package com.tournamentkit.sdk
 
 import com.tournamentkit.shared.TKError
 
-// Result callback for every public SDK call. We use the interface form from spec §3 (not a sealed
-// result) so the contract matches the spec verbatim and reads naturally from Java as well as Kotlin.
+// Result callback for every public SDK call, using the spec §3 interface form so it reads naturally from Java and Kotlin.
 interface TKCallback<T> {
     // Called on the main thread with the successful result.
     fun onSuccess(result: T)

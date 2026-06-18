@@ -1,5 +1,4 @@
-// Tracks the developer's owned projects and which one is currently selected. The selected projectId
-// scopes every per-project call (analytics, templates, …). Loaded after sign-in.
+// Tracks the developer's owned projects and the selected one, whose projectId scopes every per-project call.
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, ApiError } from "./api";
 import { useAuth } from "./auth";

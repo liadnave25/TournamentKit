@@ -19,9 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tournamentkit.shared.Match
 
-// A left→right single-elimination bracket. Columns are rounds; a later match sits vertically centered
-// between the two matches that feed it; connector lines link a match to its nextMatchId. Scrolls both
-// ways for big brackets. BYE/TBD slots render through MatchCard. Presentation only — never calls the SDK.
+// A scrollable left→right single-elimination bracket (columns are rounds, connectors link each match to its nextMatchId); presentation only.
 @Composable
 fun BracketView(
     matches: List<Match>,
