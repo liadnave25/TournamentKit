@@ -1,4 +1,4 @@
-// The left navigation within a selected project: Dashboard, Tournaments, Templates, Keys, Analytics.
+// The left navigation within a selected project: Dashboard, Tournaments, Templates, Keys.
 // Links are pid-scoped so deep links work and the active item is highlighted.
 import { NavLink } from "react-router-dom";
 
@@ -7,7 +7,6 @@ const ITEMS = [
   { to: "tournaments", label: "Tournaments" },
   { to: "templates", label: "Templates" },
   { to: "keys", label: "Keys" },
-  { to: "analytics", label: "Analytics" },
 ];
 
 // Renders the nav for project {pid}; each item links to /projects/{pid}/{section}.

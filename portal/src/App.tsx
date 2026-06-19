@@ -13,7 +13,6 @@ import { TemplatesPage } from "./pages/TemplatesPage";
 import { TournamentsPage } from "./pages/TournamentsPage";
 import { TournamentDetailPage } from "./pages/TournamentDetailPage";
 import { KeysPage } from "./pages/KeysPage";
-import { AnalyticsPage } from "./pages/AnalyticsPage";
 
 export function App() {
   const { user, loading } = useAuth();
@@ -72,7 +71,6 @@ function SignedInApp() {
           <Route path="tournaments" element={<TournamentsPage />} />
           <Route path="tournaments/:tid" element={<TournamentDetailPage />} />
           <Route path="keys" element={<KeysPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
         </Route>
 
         {/* Default + unknown → the selected project's dashboard. */}
