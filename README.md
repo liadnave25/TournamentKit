@@ -30,16 +30,28 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
 ---
 ## Screenshots
 
-<p>
-  <img src="photos/Dashboard.png" width="48%"/>
-  <img src="photos/Tournaments.png" width="48%"/>
-</p>
-<p>
-  <img src="photos/Templates.png" width="48%"/>
-  <img src="photos/Keys.png" width="48%"/>
-</p>
-<img src="photos/code.png" width="700"/>
+### Dashboard
+<img src="photos/Dashboard.png" width="100%"/>
 
+---
+
+### Tournaments
+<img src="photos/Tournaments.png" width="100%"/>
+
+---
+
+### Templates
+<img src="photos/Templates.png" width="100%"/>
+
+---
+
+### API Keys
+<img src="photos/Keys.png" width="100%"/>
+
+---
+
+### SDK Code Sample
+<img src="photos/code.png" width="100%"/>
 
 ---
 
