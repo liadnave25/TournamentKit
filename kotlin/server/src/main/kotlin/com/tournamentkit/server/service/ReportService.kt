@@ -2,6 +2,7 @@ package com.tournamentkit.server.service
 
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.Transaction
+import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.Paths
 import com.tournamentkit.server.data.matchFromMap
 import com.tournamentkit.server.data.toMap
@@ -24,7 +25,7 @@ import com.tournamentkit.shared.TournamentStatus
 import com.tournamentkit.server.engine.Outcome as EngineOutcome
 
 // The only place that mutates match/standing/rating state, reporting and admin-overriding results (each CONFIRMED immediately in one transaction).
-class ReportService(private val db: Firestore) {
+class ReportService(private val db: Firestore, private val counters: CountersRepository? = null) {
 
     // Reports a score and finalizes it (validate → progression → write CONFIRMED) in one transaction.
     fun report(projectId: String, tournamentId: String, matchId: String, userId: String, score: TKScore) {
@@ -179,7 +180,11 @@ class ReportService(private val db: Firestore) {
             // Mark the tournament finished if this result ended it.
             if (tournamentFinished) {
                 tx.update(tournRef, "status", TournamentStatus.FINISHED.name)
+                counters?.changeStatusInTx(tx, projectId, TournamentStatus.ACTIVE, TournamentStatus.FINISHED)
             }
+
+            // Increment the project-level confirmed-matches counter (avoids per-tournament reads in analytics).
+            counters?.incrementConfirmedInTx(tx, projectId)
 
             // Admin overrides are written to the audit log in the same transaction.
             if (adminOverride) {

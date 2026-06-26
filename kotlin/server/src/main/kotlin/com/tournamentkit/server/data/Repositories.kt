@@ -1,10 +1,12 @@
 package com.tournamentkit.server.data
 
 import com.google.cloud.firestore.Firestore
+import com.google.cloud.firestore.Transaction
 import com.tournamentkit.shared.Match
 import com.tournamentkit.shared.Standing
 import com.tournamentkit.shared.Template
 import com.tournamentkit.shared.Tournament
+import com.tournamentkit.shared.TournamentStatus
 import kotlinx.serialization.Serializable
 
 // A project the signed-in developer owns (for the portal's project list/switcher).
@@ -24,6 +26,8 @@ object Paths {
     fun templates(projectId: String) = "projects/$projectId/templates"
     fun auditLog(tournamentId: String) = "tournaments/$tournamentId/auditLog"
     fun projectAuditLog(projectId: String) = "projects/$projectId/auditLog"
+    // Single document that tracks aggregate counts so analytics() avoids per-tournament reads.
+    fun counters(projectId: String) = "projects/$projectId/counters/stats"
 }
 
 // Reads/writes the project doc (used by auth and dev seeding).
@@ -201,5 +205,95 @@ class RatingRepository(private val db: Firestore) {
     fun get(projectId: String, userId: String, default: Int): Int {
         val snap = db.document(Paths.rating(projectId, userId)).get().get()
         return if (snap.exists()) (snap.get("rating") as Number).toInt() else default
+    }
+}
+
+// A snapshot of the projects/{pid}/counters/stats document.
+data class CountersSnapshot(
+    val tournamentsTotal: Int,
+    val tournamentsByStatus: Map<String, Int>,
+    val confirmedMatchesTotal: Int,
+    val lastTournamentCreatedAt: Long?
+)
+
+// Maintains a single counters document per project so analytics() costs 1 read instead of T×2.
+// All mutation methods use Firestore's FieldValue.increment() so concurrent writes don't clash.
+class CountersRepository(private val db: Firestore) {
+
+    // Returns the current counters snapshot, or null when the document hasn't been created yet.
+    fun get(projectId: String): CountersSnapshot? {
+        val snap = db.document(Paths.counters(projectId)).get().get()
+        if (!snap.exists()) return null
+        @Suppress("UNCHECKED_CAST")
+        val byStatus = (snap.get("tournamentsByStatus") as? Map<String, Any>)
+            ?.mapValues { (_, v) -> (v as Number).toInt() } ?: emptyMap()
+        return CountersSnapshot(
+            tournamentsTotal = (snap.get("tournamentsTotal") as? Number)?.toInt() ?: 0,
+            tournamentsByStatus = byStatus,
+            confirmedMatchesTotal = (snap.get("confirmedMatchesTotal") as? Number)?.toInt() ?: 0,
+            lastTournamentCreatedAt = (snap.get("lastTournamentCreatedAt") as? Number)?.toLong()
+        )
+    }
+
+    // Increments confirmedMatchesTotal by 1, called inside an existing transaction at report time.
+    fun incrementConfirmedInTx(tx: Transaction, projectId: String) {
+        val ref = db.document(Paths.counters(projectId))
+        tx.update(ref, "confirmedMatchesTotal", com.google.cloud.firestore.FieldValue.increment(1))
+    }
+
+    // Moves the count for one status bucket when a tournament's status changes (inside a tx).
+    fun changeStatusInTx(tx: Transaction, projectId: String, from: TournamentStatus, to: TournamentStatus) {
+        val ref = db.document(Paths.counters(projectId))
+        tx.update(ref, "tournamentsByStatus.${from.name}", com.google.cloud.firestore.FieldValue.increment(-1))
+        tx.update(ref, "tournamentsByStatus.${to.name}", com.google.cloud.firestore.FieldValue.increment(1))
+    }
+
+    // Moves the count for one status bucket outside a transaction (used by start/freeze/unfreeze).
+    fun onStatusChanged(projectId: String, from: TournamentStatus, to: TournamentStatus) {
+        val ref = db.document(Paths.counters(projectId))
+        if (!db.document(Paths.counters(projectId)).get().get().exists()) return
+        ref.update(mapOf(
+            "tournamentsByStatus.${from.name}" to com.google.cloud.firestore.FieldValue.increment(-1),
+            "tournamentsByStatus.${to.name}" to com.google.cloud.firestore.FieldValue.increment(1)
+        )).get()
+    }
+
+    // Registers a newly created tournament (outside a transaction — creation is not transactional).
+    fun onTournamentCreated(projectId: String, status: TournamentStatus, createdAt: Long) {
+        val ref = db.document(Paths.counters(projectId))
+        db.runTransaction<Unit> { tx ->
+            val snap = tx.get(ref).get()
+            if (!snap.exists()) {
+                // First tournament in this project: initialise the document from scratch.
+                tx.set(ref, mapOf(
+                    "tournamentsTotal" to 1,
+                    "tournamentsByStatus" to mapOf(status.name to 1),
+                    "confirmedMatchesTotal" to 0,
+                    "lastTournamentCreatedAt" to createdAt
+                ))
+            } else {
+                tx.update(ref, "tournamentsTotal", com.google.cloud.firestore.FieldValue.increment(1))
+                tx.update(ref, "tournamentsByStatus.${status.name}", com.google.cloud.firestore.FieldValue.increment(1))
+                val last = (snap.get("lastTournamentCreatedAt") as? Number)?.toLong() ?: 0L
+                if (createdAt > last) tx.update(ref, "lastTournamentCreatedAt", createdAt)
+            }
+            Unit
+        }.get()
+    }
+
+    // Adjusts counters when a tournament is hard-deleted (outside a transaction).
+    fun onTournamentDeleted(projectId: String, status: TournamentStatus, confirmedMatchCount: Int) {
+        val ref = db.document(Paths.counters(projectId))
+        db.document(Paths.counters(projectId)).get().get().let { snap ->
+            if (!snap.exists()) return
+        }
+        val updates = mutableMapOf<String, Any>(
+            "tournamentsTotal" to com.google.cloud.firestore.FieldValue.increment(-1),
+            "tournamentsByStatus.${status.name}" to com.google.cloud.firestore.FieldValue.increment(-1)
+        )
+        if (confirmedMatchCount > 0) {
+            updates["confirmedMatchesTotal"] = com.google.cloud.firestore.FieldValue.increment(-confirmedMatchCount.toLong())
+        }
+        ref.update(updates).get()
     }
 }

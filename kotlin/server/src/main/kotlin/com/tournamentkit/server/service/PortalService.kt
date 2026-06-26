@@ -2,6 +2,7 @@ package com.tournamentkit.server.service
 
 import com.tournamentkit.server.auth.ApiKey
 import com.tournamentkit.server.data.AuditRepository
+import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.ProjectRepository
 import com.tournamentkit.server.data.TournamentRepository
 import com.tournamentkit.server.engine.TKException
@@ -24,7 +25,8 @@ class PortalService(
     private val tournaments: TournamentRepository,
     private val audit: AuditRepository,
     private val reports: ReportService,
-    private val tournamentService: TournamentService
+    private val tournamentService: TournamentService,
+    private val counters: CountersRepository? = null
 ) {
 
     // ---------- Projects ----------
@@ -104,6 +106,7 @@ class PortalService(
         val frozen = t.copy(status = TournamentStatus.FROZEN)
         tournaments.put(frozen)
         audit.append(tournamentId, logEntry("FREEZE", adminUid))
+        counters?.onStatusChanged(projectId, TournamentStatus.ACTIVE, TournamentStatus.FROZEN)
         return frozen
     }
 
@@ -116,12 +119,15 @@ class PortalService(
         val active = t.copy(status = TournamentStatus.ACTIVE)
         tournaments.put(active)
         audit.append(tournamentId, logEntry("UNFREEZE", adminUid))
+        counters?.onStatusChanged(projectId, TournamentStatus.FROZEN, TournamentStatus.ACTIVE)
         return active
     }
 
     // Hard-deletes a tournament and all its data, logging DELETE_TOURNAMENT to the project audit log first (the tournament's own log is destroyed with it).
     fun deleteTournament(projectId: String, tournamentId: String, adminUid: String) {
-        ownedTournament(projectId, tournamentId)   // 404 if missing or not in this project
+        val t = ownedTournament(projectId, tournamentId)   // 404 if missing or not in this project
+        // Count confirmed matches before deleting so the counters doc stays accurate.
+        val confirmedCount = tournaments.getMatches(tournamentId).count { it.status == com.tournamentkit.shared.MatchStatus.CONFIRMED }
         audit.appendProject(projectId, mapOf(
             "action" to "DELETE_TOURNAMENT",
             "tournamentId" to tournamentId,
@@ -129,6 +135,7 @@ class PortalService(
             "timestamp" to System.currentTimeMillis()
         ))
         tournaments.delete(tournamentId)
+        counters?.onTournamentDeleted(projectId, t.status, confirmedCount)
     }
 
     // Admin-overrides a match result; ReportService runs the transaction and writes the audit entry.
@@ -160,23 +167,35 @@ class PortalService(
 
     // ---------- Analytics ----------
 
-    // Computes light dashboard numbers by iterating the project's tournaments.
-    // At seminar scale iterating documents is fine; production would maintain a counters doc instead.
+    // Returns dashboard numbers from the project-level counters doc (O(1) reads) with a fallback
+    // to a full scan when the counters doc does not exist yet (e.g. first call on an old project).
     fun analytics(projectId: String): AnalyticsView {
+        val snap = counters?.get(projectId)
+        // Still need the tournament list to compute distinct participants (can't do this incrementally).
         val all = tournaments.listByProject(projectId)
-        val byStatus = all.groupingBy { it.status.name }.eachCount()
         val distinctUsers = all.flatMap { it.participants.map { p -> p.userId } }.toSet().size
-        val confirmedMatches = all.sumOf { t ->
-            tournaments.getMatches(t.id).count { it.status == com.tournamentkit.shared.MatchStatus.CONFIRMED }
+        return if (snap != null) {
+            AnalyticsView(
+                tournamentsTotal = snap.tournamentsTotal,
+                tournamentsByStatus = snap.tournamentsByStatus,
+                participantsTotal = distinctUsers,
+                matchesConfirmed = snap.confirmedMatchesTotal,
+                lastTournamentCreatedAt = snap.lastTournamentCreatedAt
+            )
+        } else {
+            // Counters doc missing: fall back to full scan (only happens before first tournament is created).
+            val byStatus = all.groupingBy { it.status.name }.eachCount()
+            val confirmedMatches = all.sumOf { t ->
+                tournaments.getMatches(t.id).count { it.status == com.tournamentkit.shared.MatchStatus.CONFIRMED }
+            }
+            AnalyticsView(
+                tournamentsTotal = all.size,
+                tournamentsByStatus = byStatus,
+                participantsTotal = distinctUsers,
+                matchesConfirmed = confirmedMatches,
+                lastTournamentCreatedAt = all.maxOfOrNull { it.createdAt }
+            )
         }
-        val lastCreated = all.maxOfOrNull { it.createdAt }
-        return AnalyticsView(
-            tournamentsTotal = all.size,
-            tournamentsByStatus = byStatus,
-            participantsTotal = distinctUsers,
-            matchesConfirmed = confirmedMatches,
-            lastTournamentCreatedAt = lastCreated
-        )
     }
 
     // ---------- helpers ----------

@@ -3,6 +3,7 @@ package com.tournamentkit.server
 import com.tournamentkit.server.config.Env
 import com.tournamentkit.server.config.installCors
 import com.tournamentkit.server.data.AuditRepository
+import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.FirestoreProvider
 import com.tournamentkit.server.data.ProjectRepository
 import com.tournamentkit.server.data.RatingRepository
@@ -49,10 +50,11 @@ fun Application.module() {
     val tournamentRepo = TournamentRepository(db)
     val ratings = RatingRepository(db)
     val auditRepo = AuditRepository(db)
-    val tournamentService = TournamentService(projects, tournamentRepo)
-    val reportService = ReportService(db)
+    val countersRepo = CountersRepository(db)
+    val tournamentService = TournamentService(projects, tournamentRepo, countersRepo)
+    val reportService = ReportService(db, countersRepo)
     val tallyService = TallyService(db)
-    val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService)
+    val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService, countersRepo)
     val devSeed = DevSeedService(projects)
 
     // One in-memory rate limiter shared across /v1 requests (per API key / IP).

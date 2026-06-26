@@ -1,5 +1,6 @@
 package com.tournamentkit.server.service
 
+import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.ProjectRepository
 import com.tournamentkit.server.data.TournamentRepository
 import com.tournamentkit.server.engine.TKException
@@ -19,7 +20,8 @@ import java.util.UUID
 // Orchestrates tournament lifecycle (create/join/start/read) on top of the repositories and engines.
 class TournamentService(
     private val projects: ProjectRepository,
-    private val tournaments: TournamentRepository
+    private val tournaments: TournamentRepository,
+    private val counters: CountersRepository? = null
 ) {
 
     // Creates a tournament from a template, snapshots its rules, and auto-joins the creator.
@@ -48,6 +50,8 @@ class TournamentService(
             startedAt = if (tally) System.currentTimeMillis() else null
         )
         tournaments.put(tournament)
+        // Register the new tournament in the project-level counters (avoids analytics full-scan).
+        counters?.onTournamentCreated(projectId, tournament.status, tournament.createdAt)
         return tournament
     }
 
@@ -120,6 +124,8 @@ class TournamentService(
 
         val started = t.copy(status = TournamentStatus.ACTIVE, startedAt = System.currentTimeMillis())
         tournaments.put(started)
+        // REGISTRATION → ACTIVE: move the status bucket in the counters document (total stays the same).
+        counters?.onStatusChanged(t.projectId, TournamentStatus.REGISTRATION, TournamentStatus.ACTIVE)
         return started
     }
 
