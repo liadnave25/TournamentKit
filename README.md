@@ -31,7 +31,16 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
 
 ## Screenshots
 
-<!-- TODO: add screenshots or demo GIF -->
+### Admin Portal
+
+| Dashboard | Tournaments | Templates |
+|---|---|---|
+| ![Dashboard](photos/Dashboard.png) | ![Tournaments](photos/Tournaments.png) | ![Templates](photos/Templates.png) |
+
+| API Keys | SDK Code Sample |
+|---|---|
+| ![API Keys](photos/Keys.png) | ![Code](photos/code.png) |
+
 
 ---
 
