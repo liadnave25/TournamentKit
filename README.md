@@ -28,18 +28,13 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
   API key rotation
 
 ---
-
 ## Screenshots
 
-### Admin Portal
-
-| Dashboard | Tournaments | Templates |
-|---|---|---|
-| ![Dashboard](photos/Dashboard.png) | ![Tournaments](photos/Tournaments.png) | ![Templates](photos/Templates.png) |
-
-| API Keys | SDK Code Sample |
-|---|---|
-| ![API Keys](photos/Keys.png) | ![Code](photos/code.png) |
+<img src="photos/Dashboard.png" width="700"/>
+<img src="photos/Tournaments.png" width="700"/>
+<img src="photos/Templates.png" width="700"/>
+<img src="photos/Keys.png" width="700"/>
+<img src="photos/code.png" width="700"/>
 
 
 ---
