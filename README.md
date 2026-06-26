@@ -48,10 +48,6 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
 ### API Keys
 <img src="photos/Keys.png" width="100%"/>
 
----
-
-### SDK Code Sample
-<img src="photos/code.png" width="100%"/>
 
 ---
 
