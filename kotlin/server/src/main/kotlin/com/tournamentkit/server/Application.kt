@@ -7,6 +7,7 @@ import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.FirestoreProvider
 import com.tournamentkit.server.data.ProjectRepository
 import com.tournamentkit.server.data.RatingRepository
+import com.tournamentkit.server.data.SdkLogRepository
 import com.tournamentkit.server.data.TournamentRepository
 import com.tournamentkit.server.errors.installErrorHandling
 import com.tournamentkit.server.routes.devRoutes
@@ -50,11 +51,12 @@ fun Application.module() {
     val tournamentRepo = TournamentRepository(db)
     val ratings = RatingRepository(db)
     val auditRepo = AuditRepository(db)
+    val sdkLogRepo = SdkLogRepository(db)
     val countersRepo = CountersRepository(db)
     val tournamentService = TournamentService(projects, tournamentRepo, countersRepo)
     val reportService = ReportService(db, countersRepo)
     val tallyService = TallyService(db)
-    val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService, countersRepo)
+    val portalService = PortalService(projects, tournamentRepo, auditRepo, reportService, tournamentService, countersRepo, sdkLogRepo)
     val devSeed = DevSeedService(projects)
 
     // One in-memory rate limiter shared across /v1 requests (per API key / IP).
@@ -65,7 +67,7 @@ fun Application.module() {
         get("/health") { call.respondText("OK") }
 
         // Authenticated public API (API key), rate-limited per key/IP.
-        publicRoutes(projects, ratings, tournamentService, reportService, tallyService, rateLimiter)
+        publicRoutes(projects, ratings, tournamentService, reportService, tallyService, sdkLogRepo, rateLimiter)
 
         // Portal management API (Firebase ID token + project ownership).
         portalRoutes(projects, portalService, tournamentService)

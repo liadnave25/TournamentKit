@@ -24,8 +24,8 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
 - **Typed error responses** — every failure is a `TKError(code, message)`, never a crash
 - **Rate limiting + API key auth** — built into the server; your app just passes a key
 - **Ready-made Jetpack Compose UI** — `BracketView`, `LeagueTableView`, `MatchCard`
-- **Admin portal** — freeze/unfreeze, result overrides with audit log, analytics dashboard,
-  API key rotation
+- **Admin portal** — freeze/unfreeze, result overrides with audit log, per-tournament **SDK
+  call logs** (success + failure), analytics dashboard, API key rotation
 
 ---
 ## Screenshots
@@ -47,6 +47,13 @@ updates. All logic runs on a managed Ktor + Firestore server; your app just call
 
 ### API Keys
 <img src="photos/Keys.png" width="100%"/>
+
+---
+
+### SDK Logs
+Per-tournament feed of every SDK call (success + failure). On a failure it shows the error
+code, message, and the request payload — so a developer can see exactly what went wrong.
+<img src="photos/logs.png" width="100%"/>
 
 
 ---
@@ -248,7 +255,8 @@ tournaments/{tournamentId}
   ├─ rules                      — snapshot of the template at creation time*
   ├─ matches/{matchId}          — homeId, awayId, score, status, round, slot, nextMatchId
   ├─ standings/{userId}         — points, wins, draws, losses, goalsFor, goalsAgainst, gd
-  └─ auditLog/{auto-id}         — per-tournament events (FREEZE, OVERRIDE_RESULT, …)
+  ├─ auditLog/{auto-id}         — per-tournament admin events (FREEZE, OVERRIDE_RESULT, …)
+  └─ sdkLogs/{auto-id}          — per-tournament SDK call log (action, outcome, payload on failure)
 ```
 
 > \* **Rules are snapshotted** at tournament creation. Editing a template in the portal after
@@ -318,6 +326,8 @@ A web **admin portal** (React) accompanies the SDK for managing your projects:
 - Create and edit **tournament templates** (type, scoring rules, participant cap)
 - **Freeze / unfreeze** tournaments to pause player reporting
 - **Override results** with a mandatory reason — every override is written to an audit log
+- Inspect **SDK logs** per tournament — every SDK call, success or failure, with the error
+  code/message and request payload on failures, so you can see what an app sent when something breaks
 - Browse **analytics** (total tournaments, matches confirmed, active participants)
 - **Rotate API keys** — the plaintext is returned exactly once and never stored
 

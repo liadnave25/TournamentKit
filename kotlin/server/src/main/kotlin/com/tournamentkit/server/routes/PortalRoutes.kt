@@ -139,6 +139,14 @@ fun Route.portalRoutes(
             call.respond(JsonArray(entries.map { it.toJson() }))
         }
 
+        get("/tournaments/{tid}/logs") {
+            val pid = call.ownedProject(projects)
+            val tid = call.parameters["tid"]!!
+            val entries = io { portal.sdkLogs(pid, tid) }
+            // SDK-log entries are heterogeneous maps; serialize them as raw JSON.
+            call.respond(JsonArray(entries.map { it.toJson() }))
+        }
+
         // ---------- API keys ----------
 
         post("/keys/rotate") {

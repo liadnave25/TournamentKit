@@ -25,6 +25,7 @@ object Paths {
     fun standing(tournamentId: String, userId: String) = "tournaments/$tournamentId/standings/$userId"
     fun templates(projectId: String) = "projects/$projectId/templates"
     fun auditLog(tournamentId: String) = "tournaments/$tournamentId/auditLog"
+    fun sdkLogs(tournamentId: String) = "tournaments/$tournamentId/sdkLogs"
     fun projectAuditLog(projectId: String) = "projects/$projectId/auditLog"
     // Single document that tracks aggregate counts so analytics() avoids per-tournament reads.
     fun counters(projectId: String) = "projects/$projectId/counters/stats"
@@ -168,7 +169,7 @@ open class TournamentRepository(private val db: Firestore) {
     // Hard-deletes a tournament and its sub-collection docs (matches, standings, auditLog) in one batched write so no orphan survives.
     open fun delete(tournamentId: String) {
         val batch = db.batch()
-        for (sub in listOf(Paths.matches(tournamentId), Paths.standings(tournamentId), Paths.auditLog(tournamentId))) {
+        for (sub in listOf(Paths.matches(tournamentId), Paths.standings(tournamentId), Paths.auditLog(tournamentId), Paths.sdkLogs(tournamentId))) {
             for (doc in db.collection(sub).get().get().documents) batch.delete(doc.reference)
         }
         batch.delete(db.document(Paths.tournament(tournamentId)))
@@ -193,6 +194,23 @@ open class AuditRepository(private val db: Firestore) {
     // Returns all audit entries for a tournament, newest first.
     fun list(tournamentId: String): List<Map<String, Any?>> {
         val q = db.collection(Paths.auditLog(tournamentId)).get().get()
+        return q.documents.map { it.data }
+            .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+    }
+}
+
+// Appends per-tournament SDK (/v1) call-log entries and reads them back (mirrors AuditRepository).
+// `open` so tests can substitute an in-memory fake that captures appended entries.
+open class SdkLogRepository(private val db: Firestore) {
+
+    // Appends one SDK-call log entry (auto-id) under the tournament's sdkLogs sub-collection.
+    open fun append(tournamentId: String, entry: Map<String, Any?>) {
+        db.collection(Paths.sdkLogs(tournamentId)).add(entry).get()
+    }
+
+    // Returns all SDK-call log entries for a tournament, newest first.
+    fun list(tournamentId: String): List<Map<String, Any?>> {
+        val q = db.collection(Paths.sdkLogs(tournamentId)).get().get()
         return q.documents.map { it.data }
             .sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
     }

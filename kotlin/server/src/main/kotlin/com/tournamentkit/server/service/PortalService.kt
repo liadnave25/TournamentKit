@@ -4,6 +4,7 @@ import com.tournamentkit.server.auth.ApiKey
 import com.tournamentkit.server.data.AuditRepository
 import com.tournamentkit.server.data.CountersRepository
 import com.tournamentkit.server.data.ProjectRepository
+import com.tournamentkit.server.data.SdkLogRepository
 import com.tournamentkit.server.data.TournamentRepository
 import com.tournamentkit.server.engine.TKException
 import com.tournamentkit.server.routes.AnalyticsView
@@ -26,7 +27,9 @@ class PortalService(
     private val audit: AuditRepository,
     private val reports: ReportService,
     private val tournamentService: TournamentService,
-    private val counters: CountersRepository? = null
+    private val counters: CountersRepository? = null,
+    // Optional (defaulted) so existing tests that don't exercise SDK logs can omit it.
+    private val sdkLogRepo: SdkLogRepository? = null
 ) {
 
     // ---------- Projects ----------
@@ -148,6 +151,12 @@ class PortalService(
     fun auditLog(projectId: String, tournamentId: String): List<Map<String, Any?>> {
         ownedTournament(projectId, tournamentId)
         return audit.list(tournamentId)
+    }
+
+    // Returns the SDK-call log for a tournament, newest first.
+    fun sdkLogs(projectId: String, tournamentId: String): List<Map<String, Any?>> {
+        ownedTournament(projectId, tournamentId)
+        return sdkLogRepo?.list(tournamentId) ?: emptyList()
     }
 
     // ---------- API keys ----------

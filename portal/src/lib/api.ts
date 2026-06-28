@@ -6,6 +6,7 @@ import type {
   CreateProjectResponse,
   ProjectSummary,
   RotateKeyResponse,
+  SdkLogEntry,
   Template,
   TournamentSummary,
   TournamentView,
@@ -145,6 +146,10 @@ export const api = {
   // The tournament's audit log, newest first.
   getAudit: (pid: string, tid: string) =>
     request<AuditEntry[]>("GET", `/portal/projects/${seg(pid)}/tournaments/${seg(tid)}/audit`),
+
+  // The tournament's SDK-call log (successes + failures), newest first.
+  getSdkLogs: (pid: string, tid: string) =>
+    request<SdkLogEntry[]>("GET", `/portal/projects/${seg(pid)}/tournaments/${seg(tid)}/logs`),
 
   // Hard-delete a tournament and all its data (admin-only). Returns 204 (no body) on success.
   deleteTournament: (pid: string, tid: string) =>

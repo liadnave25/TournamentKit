@@ -9,10 +9,11 @@ import { StatusChip } from "../components/StatusChip";
 import { OverrideDialog } from "../components/OverrideDialog";
 import { DeleteTournamentDialog } from "../components/DeleteTournamentDialog";
 import { AuditLog } from "../components/AuditLog";
+import { SdkLogs } from "../components/SdkLogs";
 import { BracketView } from "../components/visual/BracketView";
 import { LeagueTableView } from "../components/visual/LeagueTableView";
 import { MatchCard } from "../components/visual/MatchCard";
-import type { AuditEntry, Match, TournamentView } from "../lib/types";
+import type { AuditEntry, Match, SdkLogEntry, TournamentView } from "../lib/types";
 
 export function TournamentDetailPage() {
   const pid = usePid();
@@ -22,14 +23,16 @@ export function TournamentDetailPage() {
 
   const view = useAsync<TournamentView>(() => api.getTournament(pid, tournamentId), [pid, tournamentId]);
   const audit = useAsync<AuditEntry[]>(() => api.getAudit(pid, tournamentId), [pid, tournamentId]);
+  const logs = useAsync<SdkLogEntry[]>(() => api.getSdkLogs(pid, tournamentId), [pid, tournamentId]);
 
+  const [tab, setTab] = useState<"overview" | "audit" | "logs">("overview");
   const [overriding, setOverriding] = useState<Match | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
 
-  // Refreshes both the tournament view and the audit log after any admin action.
-  const refreshAll = () => { view.reload(); audit.reload(); };
+  // Refreshes the tournament view, audit log, and SDK logs after any admin action.
+  const refreshAll = () => { view.reload(); audit.reload(); logs.reload(); };
 
   // Freeze/unfreeze share this handler; the server's TKError (e.g. wrong state) is surfaced.
   const toggleFreeze = async (freeze: boolean) => {
@@ -96,6 +99,26 @@ export function TournamentDetailPage() {
       </div>
       {actionError && <div style={{ marginBottom: 14 }}><ErrorState message={actionError} /></div>}
 
+      {/* Tabs: Overview (visual + participants), Audit log (admin actions), Logs (SDK calls). */}
+      <div style={{ display: "flex", gap: 8, marginTop: 18, borderBottom: "1px solid var(--tk-line)" }}>
+        {(["overview", "audit", "logs"] as const).map((t) => (
+          <button
+            key={t}
+            className="tk-btn tk-btn-ghost"
+            onClick={() => setTab(t)}
+            style={{
+              borderRadius: 0,
+              borderBottom: tab === t ? "2px solid var(--tk-primary)" : "2px solid transparent",
+              color: tab === t ? "var(--tk-on-surface)" : "var(--tk-muted)",
+            }}
+          >
+            {t === "overview" ? "Overview" : t === "audit" ? "Audit log" : "Logs"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "overview" && (
+      <>
       {/* Visual: bracket and/or standings. */}
       {showBracket && (
         <Section title="Bracket">
@@ -136,13 +159,26 @@ export function TournamentDetailPage() {
           </div>
         )}
       </Section>
+      </>
+      )}
 
-      {/* Audit log. */}
-      <Section title="Audit log">
-        {audit.loading && <Loading label="Loading audit…" />}
-        {audit.error && <ErrorState message={audit.error.message} onRetry={audit.reload} />}
-        {audit.data && <AuditLog entries={audit.data} />}
-      </Section>
+      {/* Audit log: admin actions (freeze/unfreeze/override). */}
+      {tab === "audit" && (
+        <Section title="Audit log">
+          {audit.loading && <Loading label="Loading audit…" />}
+          {audit.error && <ErrorState message={audit.error.message} onRetry={audit.reload} />}
+          {audit.data && <AuditLog entries={audit.data} />}
+        </Section>
+      )}
+
+      {/* SDK logs: every /v1 SDK call against this tournament, success or failure. */}
+      {tab === "logs" && (
+        <Section title="SDK logs">
+          {logs.loading && <Loading label="Loading logs…" />}
+          {logs.error && <ErrorState message={logs.error.message} onRetry={logs.reload} />}
+          {logs.data && <SdkLogs entries={logs.data} />}
+        </Section>
+      )}
 
       {overriding && (
         <OverrideDialog

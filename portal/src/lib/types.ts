@@ -127,6 +127,19 @@ export interface AuditEntry {
   newScore?: TKScore;
 }
 
+// One SDK-call log entry (GET /tournaments/{id}/logs): action/outcome/timestamp always present.
+// The request payload + error detail are captured on FAILURE only, so the developer can inspect the rejected input.
+export interface SdkLogEntry {
+  action: string;
+  outcome: "SUCCESS" | "FAILURE";
+  timestamp?: number;
+  userId?: string;
+  matchId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  payload?: Record<string, unknown>;
+}
+
 // Result of rotating the API key (POST /keys/rotate) — apiKey shown once.
 export interface RotateKeyResponse {
   apiKey: string;
