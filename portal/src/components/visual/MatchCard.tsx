@@ -19,14 +19,17 @@ export function MatchCard({
 }) {
   const isBye = match.awayId == null;
   const winner = winningSide(match);
+  // A decided match gets the 2px primary stroke that marks the "winner path" in the design system.
+  const decided = match.status === "CONFIRMED" && winner !== "NONE";
 
   return (
     <div
       style={{
         background: "var(--tk-surface-2)",
-        border: "1px solid var(--tk-line)",
-        borderRadius: 12,
+        border: decided ? "2px solid var(--tk-primary)" : "1px solid var(--tk-line)",
+        borderRadius: 8,
         overflow: "hidden",
+        boxShadow: "var(--tk-shadow)",
         display: "flex",
         flexDirection: "column",
         ...style,
@@ -70,7 +73,12 @@ function Side({
   placeholder: boolean;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px" }}>
+    <div
+      style={{
+        display: "flex", alignItems: "center", gap: 8, padding: "9px 12px",
+        background: isWinner ? "rgba(0,74,198,0.06)" : "transparent",
+      }}
+    >
       {isWinner && (
         <span style={{ width: 3, height: 16, borderRadius: 2, background: "var(--tk-primary)" }} />
       )}

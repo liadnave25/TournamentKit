@@ -44,7 +44,7 @@ function SignedInApp() {
     );
   }
 
-  // Brand-new developer with no projects → prompt to create the first one.
+  // Brand-new developer with no projects → prompt to create the first one (full-width, no sidebar).
   if (projects.length === 0) {
     return (
       <>
@@ -57,26 +57,26 @@ function SignedInApp() {
   const home = `/projects/${selected?.id ?? projects[0].id}/dashboard`;
 
   return (
-    <>
-      <TopBar />
-      <Routes>
-        {/* Standalone create-project screen (reachable from anywhere). */}
-        <Route path="/projects/new" element={<CreateProjectPage />} />
+    <Routes>
+      {/* Standalone create-project screen (reachable from anywhere) — full-width, no sidebar. */}
+      <Route
+        path="/projects/new"
+        element={<><TopBar /><CreateProjectPage /></>}
+      />
 
-        {/* Everything else is scoped to a project. */}
-        <Route path="/projects/:pid" element={<ProjectLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="templates" element={<TemplatesPage />} />
-          <Route path="tournaments" element={<TournamentsPage />} />
-          <Route path="tournaments/:tid" element={<TournamentDetailPage />} />
-          <Route path="keys" element={<KeysPage />} />
-        </Route>
+      {/* Everything else is scoped to a project and lives inside the sidebar shell. */}
+      <Route path="/projects/:pid" element={<ProjectLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="templates" element={<TemplatesPage />} />
+        <Route path="tournaments" element={<TournamentsPage />} />
+        <Route path="tournaments/:tid" element={<TournamentDetailPage />} />
+        <Route path="keys" element={<KeysPage />} />
+      </Route>
 
-        {/* Default + unknown → the selected project's dashboard. */}
-        <Route path="*" element={<Navigate to={home} replace />} />
-      </Routes>
-    </>
+      {/* Default + unknown → the selected project's dashboard. */}
+      <Route path="*" element={<Navigate to={home} replace />} />
+    </Routes>
   );
 }
 
@@ -98,11 +98,14 @@ function ProjectLayout() {
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "flex-start" }}>
+    <>
       <ProjectNav pid={pid as string} />
-      <main style={{ flex: 1, minWidth: 0 }}>
-        <Outlet />
-      </main>
-    </div>
+      <div className="tk-app-main">
+        <TopBar />
+        <main style={{ minWidth: 0 }}>
+          <Outlet />
+        </main>
+      </div>
+    </>
   );
 }

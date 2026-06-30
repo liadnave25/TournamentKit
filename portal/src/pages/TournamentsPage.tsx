@@ -21,21 +21,22 @@ export function TournamentsPage() {
   );
 
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto", padding: "32px 22px" }}>
-      <h1 className="tk-display" style={{ fontSize: 26, margin: "0 0 16px" }}>Tournaments</h1>
+    <div style={{ maxWidth: 980, padding: 24 }}>
+      <div style={{ marginBottom: 18 }}>
+        <h1 className="tk-display" style={{ fontSize: 24, margin: "0 0 4px" }}>Tournaments Overview</h1>
+        <p style={{ color: "var(--tk-muted)", margin: 0, fontSize: 14 }}>
+          Every tournament in this project. Your app creates these via the SDK.
+        </p>
+      </div>
 
       {/* Status filter chips. */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         {FILTERS.map((f) => (
           <button
             key={f}
-            className="tk-btn"
+            className={`tk-btn${filter === f ? " tk-btn-primary" : " tk-btn-ghost"}`}
             onClick={() => setFilter(f)}
-            style={
-              filter === f
-                ? { background: "var(--tk-primary)", color: "var(--tk-on-primary)", borderColor: "transparent" }
-                : { background: "transparent" }
-            }
+            style={filter === f ? undefined : { background: "var(--tk-surface-3)" }}
           >
             {f}
           </button>

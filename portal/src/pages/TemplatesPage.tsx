@@ -16,9 +16,9 @@ export function TemplatesPage() {
   const [deleting, setDeleting] = useState<Template | null>(null);
 
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto", padding: "32px 22px" }}>
+    <div style={{ maxWidth: 980, padding: 24 }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
-        <h1 className="tk-display" style={{ fontSize: 26, margin: 0 }}>Templates</h1>
+        <h1 className="tk-display" style={{ fontSize: 24, margin: 0 }}>Tournament Templates</h1>
         <div style={{ flex: 1 }} />
         <button className="tk-btn tk-btn-primary" onClick={() => setEditing("new")}>New template</button>
       </div>

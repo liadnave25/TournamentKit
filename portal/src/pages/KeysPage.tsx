@@ -28,8 +28,8 @@ export function KeysPage() {
   };
 
   return (
-    <div style={{ maxWidth: 620, margin: "0 auto", padding: "32px 22px" }}>
-      <h1 className="tk-display" style={{ fontSize: 26, margin: "0 0 8px" }}>API Keys</h1>
+    <div style={{ maxWidth: 680, padding: 24 }}>
+      <h1 className="tk-display" style={{ fontSize: 24, margin: "0 0 8px" }}>API Keys</h1>
       <p style={{ color: "var(--tk-muted)", marginTop: 0, marginBottom: 22, lineHeight: 1.5 }}>
         Your SDK authenticates with this project's API key. For security the server stores only a
         <strong style={{ color: "var(--tk-on-surface)" }}> hash</strong> of the key — it can't be shown again,

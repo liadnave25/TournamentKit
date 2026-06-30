@@ -69,27 +69,45 @@ export function TournamentDetailPage() {
   // Knockout matches advance someone; group matches don't — split them for groups→knockout.
   const knockoutMatches = matches.filter((m) => m.nextMatchId != null || isFinalLike(m, matches));
 
+  // Real progress: confirmed matches over total (TALLY has no matches, so it's hidden there).
+  const confirmedCount = matches.filter((m) => m.status === "CONFIRMED").length;
+  const progressPct = matches.length > 0 ? Math.round((confirmedCount / matches.length) * 100) : 0;
+
   return (
     <Pad>
-      <Link to={`/projects/${pid}/tournaments`} style={{ fontSize: 13 }}>← All tournaments</Link>
+      <Link to={`/projects/${pid}/tournaments`} className="tk-crumbs" style={{ fontSize: 13, textDecoration: "none" }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden>chevron_left</span>
+        All tournaments
+      </Link>
 
       {/* Header + admin actions. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "10px 0 4px" }}>
-        <h1 className="tk-display" style={{ fontSize: 26, margin: 0 }}>{tournament.name}</h1>
-        <StatusChip status={tournament.status} />
-        <div style={{ flex: 1 }} />
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, margin: "12px 0 4px" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h1 className="tk-display" style={{ fontSize: 24, margin: 0 }}>{tournament.name}</h1>
+            <StatusChip status={tournament.status} />
+          </div>
+          <div className="tk-num" style={{ color: "var(--tk-muted)", fontSize: 13, marginTop: 6 }}>ID: {tournament.id}</div>
+        </div>
         {tournament.status === "ACTIVE" && (
-          <button className="tk-btn" onClick={() => toggleFreeze(true)} disabled={actionBusy}>Freeze</button>
+          <button className="tk-btn" onClick={() => toggleFreeze(true)} disabled={actionBusy}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden>ac_unit</span>
+            Freeze
+          </button>
         )}
         {tournament.status === "FROZEN" && (
-          <button className="tk-btn tk-btn-primary" onClick={() => toggleFreeze(false)} disabled={actionBusy}>Unfreeze</button>
+          <button className="tk-btn tk-btn-primary" onClick={() => toggleFreeze(false)} disabled={actionBusy}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden>play_arrow</span>
+            Unfreeze
+          </button>
         )}
         <button
-          className="tk-btn tk-btn-ghost"
-          style={{ color: "var(--tk-danger)" }}
+          className="tk-btn"
+          style={{ color: "var(--tk-danger)", borderColor: "rgba(186,26,26,0.3)", background: "var(--tk-surface-2)" }}
           onClick={() => setDeleting(true)}
           disabled={actionBusy}
         >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden>delete</span>
           Delete
         </button>
       </div>
@@ -100,25 +118,32 @@ export function TournamentDetailPage() {
       {actionError && <div style={{ marginBottom: 14 }}><ErrorState message={actionError} /></div>}
 
       {/* Tabs: Overview (visual + participants), Audit log (admin actions), Logs (SDK calls). */}
-      <div style={{ display: "flex", gap: 8, marginTop: 18, borderBottom: "1px solid var(--tk-line)" }}>
+      <div style={{ display: "flex", gap: 28, marginTop: 18, borderBottom: "1px solid var(--tk-line)" }}>
         {(["overview", "audit", "logs"] as const).map((t) => (
           <button
             key={t}
-            className="tk-btn tk-btn-ghost"
+            className={`tk-tab${tab === t ? " active" : ""}`}
             onClick={() => setTab(t)}
-            style={{
-              borderRadius: 0,
-              borderBottom: tab === t ? "2px solid var(--tk-primary)" : "2px solid transparent",
-              color: tab === t ? "var(--tk-on-surface)" : "var(--tk-muted)",
-            }}
           >
-            {t === "overview" ? "Overview" : t === "audit" ? "Audit log" : "Logs"}
+            {t === "overview" ? "Overview" : t === "audit" ? "Audit Log" : "SDK Logs"}
           </button>
         ))}
       </div>
 
       {tab === "overview" && (
       <>
+      {/* Tournament progress (real: confirmed / total matches), skipped for TALLY which has no matches. */}
+      {!isTally && matches.length > 0 && (
+        <div className="tk-card" style={{ padding: 20, marginTop: 24 }}>
+          <div className="tk-label" style={{ marginBottom: 10 }}>Tournament Progress</div>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
+            <span className="tk-num" style={{ fontSize: 30 }}>{progressPct}%</span>
+            <span style={{ color: "var(--tk-muted)", fontSize: 13 }}>{confirmedCount}/{matches.length} matches confirmed</span>
+          </div>
+          <div className="tk-track"><div className="tk-fill" style={{ width: `${progressPct}%` }} /></div>
+        </div>
+      )}
+
       {/* Visual: bracket and/or standings. */}
       {showBracket && (
         <Section title="Bracket">
@@ -227,7 +252,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 // Page padding wrapper.
 function Pad({ children }: { children: React.ReactNode }) {
-  return <div style={{ maxWidth: 1080, margin: "0 auto", padding: "24px 22px" }}>{children}</div>;
+  return <div style={{ maxWidth: 1200, padding: 24 }}>{children}</div>;
 }
 
 // Heuristic: a match with no nextMatchId that still has a round > 1 looks like a knockout final.
